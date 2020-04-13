@@ -4,14 +4,6 @@ from utils import *
 pygame.init()
 
 img_path = 'img/cell1.png'
-img = pygame.image.load(img_path)
-
-def draw_image(window, cell_radius: int, center: (int, int)):
-    scale_factor = 1.2
-    l = int(scale_factor*2*cell_radius)
-    scaled_img = pygame.transform.scale(img, (l, l))
-    window.blit(scaled_img, (center[0]-l/2, center[1]-l/2))
-
 
 # classes for gameloop ------------------------------------------------------------------------------------------------
 class Player:
@@ -61,8 +53,10 @@ class Bubble:
 class Cell:
     _registry = []
 
-    def __init__(self, center, radius, player, population):
+
+    def __init__(self, center, radius, player, population, img_path = img_path):
         self._registry.append(self)
+        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius*2, radius*2))
         self.xcord = center[0]
         self.ycord = center[1]
         self.radius = radius
@@ -80,13 +74,13 @@ class Cell:
         self.population = math.ceil(self.population / 2)
 
     def draw(self, window):
-        draw_image(window, self.radius, (self.xcord, self.ycord))
         pygame.draw.circle(window, self.cell_colour, (int(self.xcord), int(self.ycord)), self.radius)
         pygame.draw.circle(window, self.pop_colour, (int(self.xcord), int(self.ycord)),
                            int(math.sqrt(self.population) * 10))
         if self.pop_colour != grey:                                         # checks if player is neutral
             pygame.draw.circle(window, self.core_colour, [int(self.xcord), int(self.ycord)],
                                int(math.sqrt(self.population / 2) * 10))
+        window.blit(self.img, (self.xcord-self.radius, self.ycord-self.radius))
 
     def grow(self, current_time):
         if self.population > self.capacity:
