@@ -193,7 +193,6 @@ class EditorButton:
         TextBox._registry.clear()
 
     def draw(self, window):
-        draw_image(window, self.radius, (self.xcord, self.ycord))
         pygame.draw.rect(window, self.edge_colour, (self.rect[0] - 5, self.rect[1] - 5, self.rect[2] + 10, self.rect[3] + 10))
         pygame.draw.rect(window, self.colour, self.rect)
         font = pygame.font.SysFont("comincsans", 25)
