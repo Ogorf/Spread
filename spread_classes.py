@@ -3,6 +3,8 @@ from utils import *
 
 pygame.init()
 
+img_path = 'img/cell1.png'
+
 # classes for gameloop ------------------------------------------------------------------------------------------------
 class Player:
     _registry = []
@@ -51,8 +53,10 @@ class Bubble:
 class Cell:
     _registry = []
 
-    def __init__(self, center, radius, player, population):
+
+    def __init__(self, center, radius, player, population, img_path = img_path):
         self._registry.append(self)
+        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius*2, radius*2))
         self.xcord = center[0]
         self.ycord = center[1]
         self.radius = radius
@@ -76,6 +80,7 @@ class Cell:
         if self.pop_colour != grey:                                         # checks if player is neutral
             pygame.draw.circle(window, self.core_colour, [int(self.xcord), int(self.ycord)],
                                int(math.sqrt(self.population / 2) * 10))
+        window.blit(self.img, (self.xcord-self.radius, self.ycord-self.radius))
 
     def grow(self, current_time):
         if self.population > self.capacity:
