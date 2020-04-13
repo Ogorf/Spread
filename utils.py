@@ -43,11 +43,3 @@ dark_blue = (11, 11, 66)         # used for background
 dim_grey = (105, 105, 105)       # used for neutrals
 grey = (128, 128, 128)           # used for neutrals
 light_grey = (211, 211, 211)     # used for neutrals
-
-class MessageBox:
-    _registry = []
-
-    def __init__(self, screen, text, font=pygame.font.SysFont("comincsans", 25)):
-        self.text = text
-        self.font = font
-        self.screen = screen
