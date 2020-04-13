@@ -3,16 +3,6 @@ from utils import *
 
 pygame.init()
 
-img_path = 'img/cell1.png'
-img = pygame.image.load(img_path)
-
-def draw_image(window, cell_radius: int, center: (int, int)):
-    scale_factor = 1.2
-    l = int(scale_factor*2*cell_radius)
-    scaled_img = pygame.transform.scale(img, (l, l))
-    window.blit(scaled_img, (center[0]-l/2, center[1]-l/2))
-
-
 # classes for gameloop ------------------------------------------------------------------------------------------------
 class Player:
     _registry = []
@@ -80,7 +70,6 @@ class Cell:
         self.population = math.ceil(self.population / 2)
 
     def draw(self, window):
-        draw_image(window, self.radius, (self.xcord, self.ycord))
         pygame.draw.circle(window, self.cell_colour, (int(self.xcord), int(self.ycord)), self.radius)
         pygame.draw.circle(window, self.pop_colour, (int(self.xcord), int(self.ycord)),
                            int(math.sqrt(self.population) * 10))
