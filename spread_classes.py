@@ -32,13 +32,13 @@ class Bubble:
         self.population = int(mother.population / 2)
         self.mother = mother
 
-    def move(self):
+    def move(self, dt):
         radians = math.atan2(self.destination[1] - self.ycord, self.destination[0] - self.xcord)
         direction = (math.cos(radians), math.sin(radians))
         distance = math.hypot(self.xcord - self.destination[0], self.ycord - self.destination[1])
-        if distance > self.velocity:
-            self.xcord += direction[0] * self.velocity
-            self.ycord += direction[1] * self.velocity
+        if distance > self.velocity * dt:
+            self.xcord += direction[0] * self.velocity * dt
+            self.ycord += direction[1] * self.velocity * dt
 
     def draw(self, window):
         pygame.draw.circle(window, self.colour, (int(self.xcord), int(self.ycord)), self.radius)
@@ -204,7 +204,6 @@ class MainButton:
     def draw(self, window):
         pygame.draw.rect(window, dark_golden_rod, (self.xcord, self.ycord, self.width, self.height), 5)
         pygame.draw.rect(window, gold, (self.xcord + 5, self.ycord + 5, self.width - 10, self.height - 10))
-        font = pygame.font.SysFont("comincsans", 40)
         text = font.render(self.name, 1, (0, 0, 0))
         window.blit(text, (self.xcord + 8, self.ycord + 12))
 

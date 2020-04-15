@@ -10,13 +10,13 @@ pygame.display.set_caption("Spread")
 window = pygame.display.set_mode((window_width, window_height))
 
 clock = pygame.time.Clock()
-fps = 60
+fps = 120
 
-neutral = Player("0", dim_grey, grey, light_grey, 3, 20)
-p1 = Player("1", maroon, brown, peru, 12, 30)
-p2 = Player("2", olive, yellow_green, yellow, 4, 70)
-p3 = Player("3", indian_red, light_coral, light_salmon, 2, 0)
-p4 = Player("4", dark_magenta, medium_violet_red, magenta, 1, 10)
+neutral = Player("0", dim_grey, grey, light_grey, 0.03, 20)
+p1 = Player("1", maroon, brown, peru, 0.12, 30)
+p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
+p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
+p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
 
 
 # functions in main menu ----------------------------------------------------------------------------------------------
@@ -172,9 +172,6 @@ def main_menu():
 
         redraw_main_menu_window(window)
 
-        clock.tick(fps)
-
-
 # map editor ---------------------------------------------------------------------------------------------------------
 def mapeditor():
     running_editor = True
@@ -182,7 +179,7 @@ def mapeditor():
 
     while running_editor:
         window.fill(dark_blue)
-        #print(clock)                                     # delete later
+        print(clock)                                     # delete later
 
         for event in pygame.event.get():
 
@@ -224,9 +221,6 @@ def mapeditor():
             blow_cell(pos)
 
         redraw_editor_window(window)
-        clock.tick(fps)
-
-
 # game loop-----------------------------------------------------------------------------------------------------------
 def gameloop():
     running = True
@@ -244,6 +238,7 @@ def gameloop():
 
     while running:
         print(clock)                                    # delete later
+        dt = clock.tick(fps)
 
         for event in pygame.event.get():
 
@@ -272,7 +267,7 @@ def gameloop():
 
         # moves bubbles
         for bubble in Bubble._registry:
-            bubble.move()
+            bubble.move(dt)
 
         # checks if bubble collides with cell and calls collide function
         for bubble in Bubble._registry:
@@ -283,8 +278,6 @@ def gameloop():
         grow_cell_pop(pygame.time.get_ticks() - time_before_gameloop)
 
         redraw_game_window(window, selected)
-
-        clock.tick(fps)
 # gameloop end -------------------------------------------------------------------------------------------------------
 
 
