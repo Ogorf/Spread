@@ -3,6 +3,8 @@ from utils import *
 
 pygame.init()
 
+img_path = 'img/cell1.png'
+
 # classes for gameloop ------------------------------------------------------------------------------------------------
 class Player:
     _registry = []
@@ -24,12 +26,12 @@ class Bubble:
         self._registry.append(self)
         self.xcord = mother.xcord
         self.ycord = mother.ycord
-        self.radius = int(math.sqrt(mother.population / 2) * 10)
+        self.radius = int(math.sqrt(mother.population) * 10)
         self.colour = mother.core_colour
         self.destination = destination
         self.velocity = mother.velocity
         self.player = mother.player
-        self.population = int(mother.population / 2)
+        self.population = int(mother.population)
         self.mother = mother
 
     def move(self, dt):
@@ -43,15 +45,22 @@ class Bubble:
     def draw(self, window):
         pygame.draw.circle(window, self.colour, (int(self.xcord), int(self.ycord)), self.radius)
 
-    def delete(self):
-        self._registry.remove(self)
-        del self
+    def collide(bubble, cell):
+        if bubble.player == cell.player:
+            cell.population += bubble.population
+        else:
+            if cell.population >= bubble.population:
+                cell.population -= bubble.population
+            else:
+                cell.population = bubble.population - cell.population
+                cell.switch_player(bubble.player)
+        bubble._registry.remove(bubble)
 
 
 class Cell:
     _registry = []
 
-    def __init__(self, center, radius, player, population):
+    def __init__(self, center, radius, player, population, img_path=img_path):
         self._registry.append(self)
         self.xcord = center[0]
         self.ycord = center[1]
@@ -64,10 +73,11 @@ class Cell:
         self.population = population
         self.counter = 0               # counts the amount of times the cell grew
         self.capacity = int(pow(radius, 2) / 100)
+        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius * 2, radius * 2))
 
     def attack(self, enemypos):
-        Bubble(enemypos, self)
         self.population = math.ceil(self.population / 2)
+        return Bubble(enemypos, self)
 
     def draw(self, window):
         pygame.draw.circle(window, self.cell_colour, (int(self.xcord), int(self.ycord)), self.radius)
@@ -78,6 +88,7 @@ class Cell:
                                int(math.sqrt(self.population / 2) * 10))
         poptext = font.render(str(self.population), 1, (0, 0, 0))
         window.blit(poptext, (self.xcord - 3, self.ycord - 5))
+        window.blit(self.img, (self.xcord - self.radius, self.ycord - self.radius))
 
     def grow(self, current_time):
         if self.population > self.capacity:
@@ -101,6 +112,7 @@ class Cell:
                 enough_space = False
         if enough_space:
             self.radius += 1
+
 
 
 # classes for mapeditor ---------------------------------------------------------------------------------------------
@@ -189,21 +201,19 @@ class EditorButton:
         window.blit(text, (self.rect[0] + 10, self.rect[1] + 7))
 
 
-# classes for main menu -----------------------------------------------------------------------------------------------
+# classes for all -----------------------------------------------------------------------------------------------------
+# Buttons for Navigation
 class MainButton:
     _registry = []
 
-    def __init__(self, name, xcord, ycord, width, height):
+    def __init__(self, name, rect):
         self._registry.append(self)
         self.name = name
-        self.xcord = xcord
-        self.ycord = ycord
-        self.width = width
-        self.height = height
+        self.rect = rect
 
-    def draw(self, window):
-        pygame.draw.rect(window, dark_golden_rod, (self.xcord, self.ycord, self.width, self.height), 5)
-        pygame.draw.rect(window, gold, (self.xcord + 5, self.ycord + 5, self.width - 10, self.height - 10))
+    def draw(self, screen):
+        pygame.draw.rect(screen, dark_golden_rod, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
+        pygame.draw.rect(screen, gold, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
         text = font.render(self.name, 1, (0, 0, 0))
-        window.blit(text, (self.xcord + 8, self.ycord + 12))
+        window.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
 

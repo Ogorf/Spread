@@ -1,4 +1,5 @@
-from spread_classes import *
+from game import *
+from Maps import *
 
 # initialize pygame
 pygame.init()
@@ -12,27 +13,79 @@ window = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
 fps = 120
 
-neutral = Player("0", dim_grey, grey, light_grey, 0.03, 20)
+p0 = Player("0", dim_grey, grey, light_grey, 0.03, 20)
 p1 = Player("1", maroon, brown, peru, 0.12, 30)
 p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
 p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
 p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
 
 
-# functions in main menu ----------------------------------------------------------------------------------------------
+# Buttons for Navigation
+class MainButton:
+    _registry = []
+
+    def __init__(self, name, rect):
+        self._registry.append(self)
+        self.name = name
+        self.rect = rect
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, dark_golden_rod, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
+        pygame.draw.rect(screen, gold, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
+        text = font.render(self.name, 1, (0, 0, 0))
+        window.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
+
+# function in all------------------------------------------------------------------------------------------------------
 def button_effect(button):
     if button.name == "Singleplayer":
+        MainButton._registry.clear()
         gameloop()
-    if button.name == "Multiplayer":
-        pass
-    if button.name == "Map Editor":
+        return False
+    elif button.name == "Multiplayer":
+        return False
+    elif button.name == "Map Editor":
+        MainButton._registry.clear()
         mapeditor()
-    if button.name == "Laboratory":
-        pass
-    if button.name == "Quit":
-        pass
+        return False
+    elif button.name == "Laboratory":
+        return False
+    elif button.name == "Quit":
+        return False
+    elif button.name == "Menu":
+        button._registry.remove(button)
+        MainButton("Close menu", (window_width - 110, 0, 110, 30))
+        MainButton("Main menu", (window_width - 110, 30, 110, 30))
+        MainButton("Save", (window_width - 110, 60, 110, 30))
+        return True
+    elif button.name == "Exit" or button.name == "Main menu":
+        MainButton._registry.clear()
+        Cell._registry.clear()
+        Bubble._registry.clear()
+        MessageBox._registry.clear()
+        EditorButton._registry.clear()
+        TextBox._registry.clear()
+        AdjustRect._registry.clear()
+        main_menu()
+        return False
+    elif button.name == "Close menu":
+        MainButton._registry.clear()
+        MainButton("Menu", (window_width - 60, 0, 60, 30))
+        return True
+    elif button.name == "Save":
+        maps = open("Maps.py", "a")
+        maps.write("map_name = [\n")
+        for c in filter(lambda x: x != Cell._registry[0], Cell._registry):
+            maps.writelines(["Cell((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ", "p" + str(c.player.name), ", ", str(c.population), "),\n"])
+        c = Cell._registry[0]
+        maps.writelines(["Cell((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ", "p" + str(c.player.name), ", ", str(c.population), ")]\n"])
+
+        MainButton._registry.clear()
+        MainButton("Menu", (window_width - 60, 0, 60, 30))
+        return True
 
 
+
+# functions in main menu ----------------------------------------------------------------------------------------------
 def redraw_main_menu_window(screen):
     for button in MainButton._registry:
         button.draw(screen)
@@ -41,17 +94,16 @@ def redraw_main_menu_window(screen):
 
 
 # functions in gameloop -----------------------------------------------------------------------------------------------
-def redraw_game_window(screen, selected):
+def redraw_game_window(screen, game, selected):
     window.fill(dark_blue)
 
     for obj in selected:
         pygame.draw.circle(screen, (255, 255, 255), (obj.xcord, obj.ycord), obj.radius + 2)
 
-    for obj in Cell._registry:
-        obj.draw(screen)
+    for button in MainButton._registry:
+        button.draw(screen)
 
-    for obj in Bubble._registry:
-        obj.draw(screen)
+    game.draw(window)
 
     pygame.display.update()
 
@@ -60,18 +112,6 @@ def grow_cell_pop(current_time):
     for obj in Cell._registry:
         obj.grow(current_time)
 
-
-def collide(bubble, cell):
-    if bubble.player == cell.player:
-        cell.population += bubble.population
-    else:
-        if cell.population >= bubble.population:
-            cell.population -= bubble.population
-        else:
-            cell.population = bubble.population - cell.population
-            cell.switch_player(bubble.player)
-
-    bubble.delete()
 
 
 # funtions for mapeditor --------------------------------------------------------------------------------------------
@@ -84,10 +124,11 @@ def blow_cell(pos):
             if math.hypot(pos[0] - cell.xcord, pos[1] - cell.ycord) < cell.radius:
                 cell.blow()
     if not cell_is_near:
-        Cell((pos[0], pos[1]), 20, neutral, 0)
+        Cell((pos[0], pos[1]), 20, p0, 0)
 
 
 def redraw_editor_window(screen):
+    screen.fill(dark_blue)
     for cell in Cell._registry:
         cell.draw(screen)
     for obj in AdjustRect._registry:
@@ -98,6 +139,8 @@ def redraw_editor_window(screen):
         button.draw(screen)
     for box in MessageBox._registry:
         box.draw(screen)
+    for button in MainButton._registry:
+        button.draw(screen)
     pygame.display.update()
 
 
@@ -116,7 +159,7 @@ def adjust_cell(cell):
                     Cell._registry.remove(cell)
             elif box.name == "Player: " and int(box.text) in range(0, 5):
                 if int(box.text) == 0:
-                    cell.switch_player(neutral)
+                    cell.switch_player(p0)
                 elif int(box.text) == 1:
                     cell.switch_player(p1)
                 elif int(box.text) == 2:
@@ -147,11 +190,11 @@ def adjust_cell(cell):
 def main_menu():
     running_menu = True
 
-    MainButton("Singleplayer", 550, 100, 200, 50)
-    MainButton("Multiplayer", 550, 200, 200, 50)
-    MainButton("Map Editor", 550, 300, 200, 50)
-    MainButton("Laboratory", 550, 400, 200, 50)
-    MainButton("Quit", 550, 500, 200, 50)
+    MainButton("Singleplayer", (550, 100, 200, 50))
+    MainButton("Multiplayer", (550, 200, 200, 50))
+    MainButton("Map Editor", (550, 300, 200, 50))
+    MainButton("Laboratory", (550, 400, 200, 50))
+    MainButton("Quit", (550, 500, 200, 50))
 
     while running_menu:
         window.fill(dark_blue)
@@ -164,11 +207,9 @@ def main_menu():
                 running_menu = False
 
             if event.type == pygame.MOUSEBUTTONUP:
-                pos = pygame.mouse.get_pos()
                 for button in MainButton._registry:
-                    if button.xcord <= pos[0] <= button.xcord + button.width and button.ycord <= pos[1] <= button.ycord + button.height:
-                        button_effect(button)
-                        running_menu = False
+                    if pygame.Rect(button.rect).collidepoint(event.pos):
+                        running_menu = button_effect(button)
 
         redraw_main_menu_window(window)
 
@@ -177,8 +218,9 @@ def mapeditor():
     running_editor = True
     selected = []
 
+    MainButton("Menu", (window_width - 60, 0, 60, 30))
+
     while running_editor:
-        window.fill(dark_blue)
         print(clock)                                     # delete later
 
         for event in pygame.event.get():
@@ -210,6 +252,9 @@ def mapeditor():
                 if MessageBox._registry and pygame.Rect(MessageBox._registry[0].ok).collidepoint(event.pos):
                     MessageBox._registry.clear()
 
+                for button in MainButton._registry:
+                    if pygame.Rect(button.rect).collidepoint(event.pos):
+                        running_editor = button_effect(button)
 
             if event.type == pygame.KEYDOWN:
                 for box in TextBox._registry:
@@ -221,18 +266,17 @@ def mapeditor():
             blow_cell(pos)
 
         redraw_editor_window(window)
+
+
 # game loop-----------------------------------------------------------------------------------------------------------
 def gameloop():
     running = True
     selected = []
 
-    # add Cells
-    Cell((700, 500), 90, p1, p1.startpop)
-    Cell((200, 400), 140, p2, p2.startpop)
-    Cell((500, 120), 40, p1, p1.startpop)
-    Cell((1100, 500), 80, p2, p2.startpop)
-    Cell((1100, 120), 60, neutral, neutral.startpop)
-    Cell((900, 550), 100, neutral, neutral.startpop)
+    cell_list = map_name
+    game = Game(cell_list)
+
+    MainButton("Exit", (1240, 0, 60, 30))
 
     time_before_gameloop = pygame.time.get_ticks()
 
@@ -251,8 +295,12 @@ def gameloop():
                 pos = pygame.mouse.get_pos()
                 for c in Cell._registry:
                     if math.hypot(pos[0] - c.xcord, pos[1] - c.ycord) < c.radius:
-                        for obj in filter(lambda x: x != c, selected):
-                            obj.attack((c.xcord, c.ycord))
+                        game.order_attacks(selected, c)
+                        break
+
+                for button in MainButton._registry:
+                    if pygame.Rect(button.rect).collidepoint(event.pos):
+                        running = button_effect(button)
 
         # selecting Cells
         if pygame.mouse.get_pressed():
@@ -265,19 +313,9 @@ def gameloop():
         if not pygame.mouse.get_pressed()[0]:
             selected.clear()
 
-        # moves bubbles
-        for bubble in Bubble._registry:
-            bubble.move(dt)
+        game.tick(dt, pygame.time.get_ticks() - time_before_gameloop)
 
-        # checks if bubble collides with cell and calls collide function
-        for bubble in Bubble._registry:
-            for cell in filter(lambda x: x != bubble.mother, Cell._registry):
-                if math.hypot(bubble.xcord - cell.xcord, bubble.ycord - cell.ycord) < cell.radius:
-                    collide(bubble, cell)
-
-        grow_cell_pop(pygame.time.get_ticks() - time_before_gameloop)
-
-        redraw_game_window(window, selected)
+        redraw_game_window(window, game, selected)
 # gameloop end -------------------------------------------------------------------------------------------------------
 
 
