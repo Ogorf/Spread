@@ -216,9 +216,6 @@ def main_menu():
                         running_menu = button_effect(button)
 
         redraw_main_menu_window(window)
-    pygame.display.quit()
-    pygame.quit()
-    exit()
 
 # map editor ---------------------------------------------------------------------------------------------------------
 def mapeditor():
