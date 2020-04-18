@@ -1,5 +1,6 @@
 from game import *
 from Maps import *
+from skilltree import *
 
 # initialize pygame
 pygame.init()
@@ -12,6 +13,31 @@ window = pygame.display.set_mode((window_width, window_height))
 
 clock = pygame.time.Clock()
 fps = 120
+
+
+p0 = Player("0", dim_grey, grey, light_grey, 0.03, 20)
+p1 = Player("1", maroon, brown, peru, 0.12, 30)
+p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
+p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
+p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
+skilltree = empty_skilltree()
+
+
+# Buttons for Navigation
+class MainButton:
+    _registry = []
+
+    def __init__(self, name, rect):
+        self._registry.append(self)
+        self.name = name
+        self.rect = rect
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, dark_golden_rod, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
+        pygame.draw.rect(screen, gold, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
+        text = font.render(self.name, 1, (0, 0, 0))
+        window.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
+
 
 
 # function in all------------------------------------------------------------------------------------------------------
@@ -27,6 +53,8 @@ def button_effect(button):
         mapeditor()
         return False
     elif button.name == "Laboratory":
+        MainButton._registry.clear()
+        skilltree_loop()
         return False
     elif button.name == "Quit":
         return False
@@ -296,5 +324,40 @@ def gameloop():
         redraw_game_window(window, game, selected)
 # gameloop end -------------------------------------------------------------------------------------------------------
 
+def skilltree_loop():
+    running_skilltree = True
+    while running_skilltree:
+        #clock.tick(120)
+
+        window.fill(dark_blue)
+        skilltree.draw(window)
+
+        events = pygame.event.get()
+        if not pygame.MOUSEMOTION in [event.type for event in events]:
+            x, y = pygame.mouse.get_pos()
+            perk = skilltree.get_perk(x, y)
+            skilltree.draw_tooltip(window, x, y)
+
+        for event in events:
+            # close window
+
+            if event.type == pygame.QUIT:
+                running_skilltree = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    skilltree.navigate(-1)
+                elif event.key == pygame.K_RIGHT:
+                    skilltree.navigate(1)
+                elif event.key == pygame.K_ESCAPE:
+                    running_skilltree = False
+            elif event.type == pygame.MOUSEBUTTONUP:
+                x, y = event.pos
+                perk = skilltree.get_perk(x, y)
+                if perk != None:
+                    perk.level_up()
+
+        pygame.display.update()
+
+    main_menu()
 
 main_menu()
