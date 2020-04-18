@@ -69,7 +69,6 @@ class Perk:
     def level_up(self):
         self.skilled = (self.skilled+1)%(self.levels+1)
         self.rendered_text = None
-        print(str(self.skilled))
 
     def draw(self, window, center, box_size, font):
         self.bbox = [center[0]-box_size[0]/2, center[1]-box_size[1]/2, box_size[0], box_size[1]]
