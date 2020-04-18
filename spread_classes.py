@@ -18,6 +18,14 @@ class Player:
         self.velocity = velocity
         self.startpop = startpop
 
+    #TODO check for skills in the skill tree
+    def attack_modifier(self):
+        return 0
+
+    #TODO check for skills in the skill tree
+    def defense_modifier(self):
+        return 0
+
 
 class Bubble:
     _registry = []
@@ -46,13 +54,15 @@ class Bubble:
         pygame.draw.circle(window, self.colour, (int(self.xcord), int(self.ycord)), self.radius)
 
     def collide(bubble, cell):
+        attack_modifier = bubble.player.attack_modifier()-cell.player.defense_modifier()
         if bubble.player == cell.player:
             cell.population += bubble.population
         else:
-            if cell.population >= bubble.population:
-                cell.population -= bubble.population
+            result = fight(bubble.population, cell.population, attack_modifier)
+            if  result >= 0:
+                cell.population = result
             else:
-                cell.population = bubble.population - cell.population
+                cell.population = -result
                 cell.switch_player(bubble.player)
         bubble._registry.remove(bubble)
 
@@ -217,3 +227,14 @@ class MainButton:
         text = font.render(self.name, 1, (0, 0, 0))
         screen.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
 
+def fight(a, d, am):
+    if am >= 0:
+        if int(a*(1+am))-d >= 1:
+            return -int(a-d/(1+am))
+        else:
+            return d-int(a*(1+am))
+    elif am < 0:
+        if a-int(d*(1-am)) >= 1:
+            return -(a-int(d*(1-am)))
+        else:
+            return int(d-a/(1-am))
