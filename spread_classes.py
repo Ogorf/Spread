@@ -215,5 +215,5 @@ class MainButton:
         pygame.draw.rect(screen, dark_golden_rod, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
         pygame.draw.rect(screen, gold, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
         text = font.render(self.name, 1, (0, 0, 0))
-        window.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
+        screen.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
 

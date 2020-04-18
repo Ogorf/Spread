@@ -13,27 +13,6 @@ window = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
 fps = 120
 
-p0 = Player("0", dim_grey, grey, light_grey, 0.03, 20)
-p1 = Player("1", maroon, brown, peru, 0.12, 30)
-p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
-p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
-p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
-
-
-# Buttons for Navigation
-class MainButton:
-    _registry = []
-
-    def __init__(self, name, rect):
-        self._registry.append(self)
-        self.name = name
-        self.rect = rect
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, dark_golden_rod, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
-        pygame.draw.rect(screen, gold, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
-        text = font.render(self.name, 1, (0, 0, 0))
-        window.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
 
 # function in all------------------------------------------------------------------------------------------------------
 def button_effect(button):
@@ -71,7 +50,7 @@ def button_effect(button):
         MainButton._registry.clear()
         MainButton("Menu", (window_width - 60, 0, 60, 30))
         return True
-    elif button.name == "Save":
+    elif button.name == "Save":      # to-do: check if map is empty
         maps = open("Maps.py", "a")
         maps.write("map_name = [\n")
         for c in filter(lambda x: x != Cell._registry[0], Cell._registry):
@@ -82,7 +61,6 @@ def button_effect(button):
         MainButton._registry.clear()
         MainButton("Menu", (window_width - 60, 0, 60, 30))
         return True
-
 
 
 # functions in main menu ----------------------------------------------------------------------------------------------
@@ -111,7 +89,6 @@ def redraw_game_window(screen, game, selected):
 def grow_cell_pop(current_time):
     for obj in Cell._registry:
         obj.grow(current_time)
-
 
 
 # funtions for mapeditor --------------------------------------------------------------------------------------------
@@ -213,6 +190,7 @@ def main_menu():
 
         redraw_main_menu_window(window)
 
+
 # map editor ---------------------------------------------------------------------------------------------------------
 def mapeditor():
     running_editor = True
@@ -273,7 +251,7 @@ def gameloop():
     running = True
     selected = []
 
-    cell_list = map_name
+    cell_list = map_name[:]
     game = Game(cell_list)
 
     MainButton("Exit", (1240, 0, 60, 30))
@@ -320,4 +298,3 @@ def gameloop():
 
 
 main_menu()
-
