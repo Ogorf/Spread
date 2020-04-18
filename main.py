@@ -1,5 +1,6 @@
 from game import *
 from Maps import *
+from skilltree import *
 
 # initialize pygame
 pygame.init()
@@ -48,6 +49,8 @@ def button_effect(button):
         mapeditor()
         return False
     elif button.name == "Laboratory":
+        MainButton._registry.clear()
+        skilltree_loop()
         return False
     elif button.name == "Quit":
         return False
@@ -212,6 +215,9 @@ def main_menu():
                         running_menu = button_effect(button)
 
         redraw_main_menu_window(window)
+    pygame.display.quit()
+    pygame.quit()
+    exit()
 
 # map editor ---------------------------------------------------------------------------------------------------------
 def mapeditor():
@@ -318,6 +324,26 @@ def gameloop():
         redraw_game_window(window, game, selected)
 # gameloop end -------------------------------------------------------------------------------------------------------
 
+def skilltree_loop():
+    running_skilltree = True
+    while running_skilltree:
+        print(clock)                                     # delete later
+
+        for event in pygame.event.get():
+            # close window
+            if event.type == pygame.QUIT:
+                running_skilltree = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    skilltree.navigate(-1)
+                elif event.key == pygame.K_RIGHT:
+                    skilltree.navigate(1)
+
+        window.fill(dark_blue)
+        skilltree.draw(window)
+        pygame.display.update()
+    #pygame.quit()
+    #sys.exit()
 
 main_menu()
-
