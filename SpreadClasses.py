@@ -12,7 +12,8 @@ class ActionTracker:
         self.player = player
         self.cell_loose_history = [] # should contain pairs of (time, cell) where time is the time that passed until player lost cell
         self.cell_win_history = [] # should contain pairs of (time, cell) where time is the time that passed until player won cell
-        self.ordered_attacks = []
+        self.ordered_attacks = [] # (time, bubble)
+        self.received_attacks = [] # (time, cell, bubble)
 
 
 class Player:
@@ -72,6 +73,7 @@ class Bubble:
             result = fight(self.population, cell.population, attack_modifier)
             if result >= 0:
                 cell.population = result
+                cell.defended(self)
             else:
                 cell.population = -result
                 cell.switch_player(self.player)
@@ -89,9 +91,11 @@ class Cell:
         self.velocity = player.velocity
         self.player = player
         self.population = population
-        self.counter = 0               # counts the amount of times the cell grew
         self.capacity = int(pow(radius, 2) / 100)
         self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius * 2, radius * 2))
+        self.time_cycle = 0
+        self.cycle_interval = int(50000/self.radius)
+        self.counter = 0 # TODO remove
 
     def attack(self, enemypos):
         self.population = math.ceil(self.population / 2)
@@ -111,13 +115,29 @@ class Cell:
         window.blit(poptext, (self.xcord - 3, self.ycord - 5))
         window.blit(self.img, (self.xcord - self.radius, self.ycord - self.radius))
 
-    def grow(self, current_time):
+    def grow(self, dt):
         if self.population > self.capacity:
             self.population = self.capacity
-        if current_time > 50000 * self.counter / self.radius:
-            self.counter += 1
+        self.time_cycle += dt
+        if self.time_cycle > self.cycle_interval:
+            current_time = pygame.time.get_ticks()
+            cycles = self.time_cycle/self.cycle_interval
+            self.time_cycle %= self.cycle_interval
+            for (t, c, b) in self.player.action_tracker.received_attacks:
+                if c == self:
+                    info = {}
+                    info["current_time"] = current_time
+                    info["arrival_time"] = t
+                    info["bubble"] = b
+                    perk = b.player.skilltree.find_perk("Infection", "Base")
+                    if perk != None and perk.get_value(info):
+                        return
             if self.population < self.capacity and self.player.name != "0":
                 self.population += 1
+
+    def defended(self, bubble):
+        passed_time = pygame.time.get_ticks()
+        self.player.action_tracker.received_attacks += [(passed_time, self, bubble)]
 
     def switch_player(self, new_player):
         passed_time = pygame.time.get_ticks()
@@ -129,7 +149,7 @@ class Cell:
         self.core_colour = new_player.core_colour
         self.velocity = new_player.velocity
         perk = self.player.skilltree.find_perk("Attack", "Slavery")
-        if perk.skilled > 0:
+        if perk != None and perk.skilled > 0:
             self.population += perk.get_value()
 
     def blow(self, cell_list):

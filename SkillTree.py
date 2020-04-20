@@ -69,12 +69,9 @@ class Perk:
         self.name = name
         self.tier = kwargs.get("tier", 0)
         self.values = kwargs.pop("values", [[]])
-        print(self.values)
         l = list(zip(*self.values))
         l = map(lambda x: "/".join(list(map(lambda y: str(y), x))), l)
         l = list(l)
-        print(l)
-        print(kwargs["tooltip"])
         self.tooltip = kwargs.pop("tooltip", "").format(*l)#*list(zip(self.values)))
         self.levels = len(self.values)
         self.skilled = kwargs.pop("skilled", 0)
@@ -112,6 +109,7 @@ class Perk:
         return 0
 
 from AttackSkill import *
+from InfectionSkill import *
 
 
 class SkillTree:
@@ -164,12 +162,13 @@ class SkillTree:
 
 def empty_skilltree():
     attack = AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
+    infection = InfectionSkill([Base([(50,), (33,), (25,)])])
     # defense1 = Perk("Base", "Increases defense by 10/20/30%", 0, 3)
     # defense2 = Perk("Loots of Victory", "For every successful defense, the cell gains +5 pop", 1, 1)
     # defense3 = Perk("Preparation", "For every consecutive second a cell has neither defended nor attacked, it gains +1% defense", 1, 1)
     # defense4 = Perk("Membran", "The first 10 attackers of every attacking enemy bubble die to the membran before doing damage", 2, 1)
     # defense = Skill("Defense", [defense1, defense2, defense3, defense4])
-    skilltree = SkillTree([attack])  # , defense])
+    skilltree = SkillTree([attack, infection])  # , defense])
     return skilltree
 
 def skilltree_loop(window):
