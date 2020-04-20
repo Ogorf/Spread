@@ -26,18 +26,23 @@ class Player:
         self.startpop = startpop
         self.action_tracker = ActionTracker(self)
         self.skilltree = empty_skilltree()
+        self.action_tracker = ActionTracker(self)
 
     def attack_modifier(self, bubble):
         t = pygame.time.get_ticks()
         info = {"bubble": bubble, "time": t, "player": self}
         return self.skilltree.attack_modifier(info)
 
+    def defense_modifier(self):
+        return 0
+
     def clear_action_tracker(self):
         self.action_tracker = ActionTracker(self)
 
 class Bubble:
 
-    def __init__(self, destination, mother):
+    def __init__(self, destination, mother, time):
+        self.creation_time = time
         self.xcord = mother.xcord
         self.ycord = mother.ycord
         self.radius = int(math.sqrt(mother.population) * 10)
@@ -63,10 +68,12 @@ class Bubble:
         if self.player == cell.player:
             cell.population += self.population
         else:
-            if cell.population >= self.population:
-                cell.population -= self.population
+            attack_modifier = self.player.attack_modifier(self)-cell.player.defense_modifier()
+            result = fight(self.population, cell.population, attack_modifier)
+            if result >= 0:
+                cell.population = result
             else:
-                cell.population = self.population - cell.population
+                cell.population = -result
                 cell.switch_player(self.player)
 
 
@@ -88,7 +95,10 @@ class Cell:
 
     def attack(self, enemypos):
         self.population = math.ceil(self.population / 2)
-        return Bubble(enemypos, self)
+        time = pygame.time.get_ticks()
+        b = Bubble(enemypos, self, time)
+        self.player.action_tracker.ordered_attacks += [(time, b)]
+        return b
 
     def draw(self, window):
         pygame.draw.circle(window, self.cell_colour, (int(self.xcord), int(self.ycord)), self.radius)
@@ -110,11 +120,17 @@ class Cell:
                 self.population += 1
 
     def switch_player(self, new_player):
+        passed_time = pygame.time.get_ticks()
+        new_player.action_tracker.cell_win_history += [(passed_time, self)]
+        self.player.action_tracker.cell_loose_history += [(passed_time, self)]
         self.player = new_player
         self.cell_colour = new_player.cell_colour
         self.pop_colour = new_player.pop_colour
         self.core_colour = new_player.core_colour
         self.velocity = new_player.velocity
+        perk = self.player.skilltree.find_perk("Attack", "Slavery")
+        if perk.skilled > 0:
+            self.population += perk.get_value()
 
     def blow(self, cell_list):
         enough_space = True
