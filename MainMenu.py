@@ -33,7 +33,6 @@ class MainMenu:
                     for button in self.buttons:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             return button.name
-
             self.draw()
 
 

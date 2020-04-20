@@ -1,12 +1,13 @@
 from Utils import *
 from Maps import map_name
 from Game import *
+from SpreadClasses import Cell
 
 
 class Singleplayer:
 
     def __init__(self, screen):
-        self.cells = map_name[:]
+        self.cells = []
         self.game = Game(self.cells)
         self.screen = screen
         self.buttons = [
@@ -26,8 +27,15 @@ class Singleplayer:
 
         pygame.display.update()
 
+    def reset(self):
+        self.cells.clear()
+        for obj in map_name:
+            self.cells.append(Cell((obj[0][0], obj[0][1]), obj[1], obj[2], obj[3]))
+        self.game = Game(self.cells)
+
     def loop(self):
 
+        self.reset()
         time_before_loop = pygame.time.get_ticks()
         selected = []
 

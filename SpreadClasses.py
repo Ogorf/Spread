@@ -1,4 +1,5 @@
 from Utils import *
+import math
 
 pygame.init()
 
@@ -40,15 +41,15 @@ class Bubble:
     def draw(self, screen):
         pygame.draw.circle(screen, self.colour, (int(self.xcord), int(self.ycord)), self.radius)
 
-    def collide(bubble, cell):
-        if bubble.player == cell.player:
-            cell.population += bubble.population
+    def collide(self, cell):
+        if self.player == cell.player:
+            cell.population += self.population
         else:
-            if cell.population >= bubble.population:
-                cell.population -= bubble.population
+            if cell.population >= self.population:
+                cell.population -= self.population
             else:
-                cell.population = bubble.population - cell.population
-                cell.switch_player(bubble.player)
+                cell.population = self.population - cell.population
+                cell.switch_player(self.player)
 
 
 class Cell:
@@ -104,3 +105,16 @@ class Cell:
                 enough_space = False
         if enough_space:
             self.radius += 1
+
+
+def fight(a, d, am):
+    if am >= 0:
+        if int(a*(1+am))-d >= 1:
+            return -int(a-d/(1+am))
+        else:
+            return d-int(a*(1+am))
+    elif am < 0:
+        if a-int(d*(1-am)) >= 1:
+            return -(a-int(d*(1-am)))
+        else:
+            return int(d-a/(1-am))

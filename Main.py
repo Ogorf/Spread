@@ -1,5 +1,7 @@
 from MainMenu import *
 from Singleplayer import *
+from MapEditor import *
+from SkillTree import *
 
 # name window
 pygame.display.set_caption("Spread")
@@ -16,9 +18,9 @@ while running:
         goto = Singleplayer(window).loop()
     elif goto == "Multiplayer":
         goto = Multiplayer(window).loop()
-    elif goto == "Mapeditor":
-        goto = Mapeditor(window).loop()
+    elif goto == "Map Editor":
+        goto = MapEditor(window).loop()
     elif goto == "Laboratory":
-        goto = Laboratory(window).loop()
+        goto = skilltree_loop(window)
     elif goto == "Quit":
         running = False

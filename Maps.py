@@ -1,4 +1,3 @@
-from SpreadClasses import Cell
 from SpreadClasses import Player
 from Utils import *
 
@@ -10,13 +9,15 @@ p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
 p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
 p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
 
+
 map_name = [
-    Cell((536, 126), 94, p2, 44),
-    Cell((1090, 140), 82, p3, 0),
-    Cell((792, 382), 92, p0, 0),
-    Cell((826, 122), 44, p0, 0),
-    Cell((482, 650), 58, p0, 0),
-    Cell((1190, 590), 95, p4, 22),
-    Cell((128, 66), 65, p0, 0),
-    Cell((110, 662), 49, p0, 0),
-    Cell((192, 392), 94, p1, 22)]
+((640, 344), 55, p1, 30),
+((894, 376), 76, p0, 0),
+((858, 542), 80, p0, 0),
+((1040, 110), 95, p4, 55),
+((484, 178), 58, p0, 0),
+((268, 106), 61, p0, 0),
+((328, 188), 20, p0, 0),
+((618, 556), 57, p0, 0),
+((1214, 686), 62, p0, 0),
+((296, 444), 136, p2, 33)]
