@@ -68,8 +68,15 @@ class Perk:
     def __init__(self, name: str, **kwargs):  # tooltip: str, tier: int = 0, levels: int = 1, skilled: int = 0):
         self.name = name
         self.tier = kwargs.get("tier", 0)
-        self.tooltip = kwargs.pop("tooltip", "")
-        self.levels = kwargs.pop("levels", 1)
+        self.values = kwargs.pop("values", [[]])
+        print(self.values)
+        l = list(zip(*self.values))
+        l = map(lambda x: "/".join(list(map(lambda y: str(y), x))), l)
+        l = list(l)
+        print(l)
+        print(kwargs["tooltip"])
+        self.tooltip = kwargs.pop("tooltip", "").format(*l)#*list(zip(self.values)))
+        self.levels = len(self.values)
         self.skilled = kwargs.pop("skilled", 0)
         self.__dict__.update(**kwargs)
         self.bbox = None
@@ -156,7 +163,7 @@ class SkillTree:
 
 
 def empty_skilltree():
-    attack = AttackSkill([Base([0.1, 0.2, 0.3]), Rage((3, 0.2)), Berserker((2, 0.05)), Slavery(10)])
+    attack = AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
     # defense1 = Perk("Base", "Increases defense by 10/20/30%", 0, 3)
     # defense2 = Perk("Loots of Victory", "For every successful defense, the cell gains +5 pop", 1, 1)
     # defense3 = Perk("Preparation", "For every consecutive second a cell has neither defended nor attacked, it gains +1% defense", 1, 1)
