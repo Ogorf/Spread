@@ -21,7 +21,7 @@ class Game:
         for c in filter(lambda x: x != cell, cell_list):
             self.bubbles += [c.attack((cell.xcord, cell.ycord))]
 
-    def tick(self, dt, time_since_start):
+    def tick(self, dt, current_time):
         # moves bubbles
         for bubble in self.bubbles:
             bubble.move(dt)
@@ -34,5 +34,5 @@ class Game:
                     self.bubbles.remove(bubble)
         # grow cells
         for cell in self.cells:
-            cell.grow(time_since_start)
+            cell.grow(dt)
 

@@ -6,5 +6,15 @@ class InfectionPerk(Perk):
 
 class Base(InfectionPerk):
     def __init__(self, values):
-        tooltip = "Cells u attacked stop growing for {} of seconds".format("attacker/".join(map(lambda i: str(i), values))[:-1])
-        super(Base, self).__init__("Base", tooltip=tooltip, tier=0, levels=len(values), values=values)
+        tooltip = "Cells u attacked stop growing for attacker divided by {} of seconds"
+        super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
+
+    def get_value(self, info):
+        if self.skilled > 0 and info["current_time"]-info["arrival_time"] <= info["bubble"].population/self.values[self.skilled-1][0]:
+            return 1
+        else:
+            return 0
+
+class InfectionSkill(Skill):
+    def __init__(self, l):
+        super(InfectionSkill, self).__init__("Infection", l)

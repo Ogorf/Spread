@@ -13,7 +13,7 @@ class Base(AttackPerk):
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
     def attack_modifier(self, info):
-        return self.values[self.skilled]
+        return self.values[self.skilled][0]
 
 
 class Rage(AttackPerk):
@@ -27,10 +27,16 @@ class Rage(AttackPerk):
         return len(list(filter(lambda time_cell: time-time_cell[0] <= 1000*self.get_condition_value(), player.action_tracker.cell_loose_history))) > 0
 
     def get_condition_value(self):
-        return self.value[0]
+        if self.skilled > 0:
+            return self.values[self.skilled-1][0]
+        else:
+            return 0
 
     def get_value(self):
-        return self.value[1]
+        if self.skilled > 0:
+            return self.values[self.skilled-1][1]
+        else:
+            return 0
 
     def attack_modifier(self, info):
         if self.condition(info["player"], info["time"]):
@@ -47,7 +53,7 @@ class Berserker(AttackPerk):
 
     def get_condition_value(self):
         if self.skilled > 0:
-            return self.value[self.skilled-1][0]
+            return self.values[self.skilled-1][0]
 
     def get_value(self):
         if self.skilled > 0:
@@ -69,7 +75,7 @@ class Slavery(AttackPerk):
 
     def get_value(self):
         if self.skilled > 0:
-            return self.values[self.skilled-1]
+            return self.values[self.skilled-1][0]
         else:
             return 0
 

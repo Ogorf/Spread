@@ -16,10 +16,10 @@ p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
 # c3 = Cell((600, 300), 80, p0, 100)
 
 
-def create_test_cells(amount: int, p: Player):
+def create_test_cells(amount: int, p: Player, pop = 100):
     result = []
     for i in range(0, amount):
-        result += [Cell((i*200, i*100), 50+10*i, p, 100)]
+        result += [Cell((i*200, i*100), 1000, p, pop)]
     return result
 
 
@@ -45,16 +45,15 @@ def test_fight():
 
 from AttackSkill import *
 def test_rage():
-
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
-    value_list = [(0.03, 0.2), (0.02, 0.1)]
+    value_list = [(0.3, 0.2), (0.2, 0.1)]
     for time, value in value_list:
-        perk = Rage((time, value))
+        perk = Rage([(time, value)])
         perk.level_up()
         skilltree = SkillTree([AttackSkill([perk])])
         p.skilltree = skilltree
-        pcells = create_test_cells(1, p)
-        a_bubbles = create_test_bubbles(1, p0)
+        pcells = create_test_cells(1, p, 1)
+        a_bubbles = create_test_bubbles(1, p0, 10)
         for cell, bubble in zip(pcells, a_bubbles):
             bubble.collide(cell)
         b = create_test_bubbles(1, p)[0]
@@ -63,15 +62,14 @@ def test_rage():
         assert p.attack_modifier(b) == value
         sleep(time)
         assert p.attack_modifier(b) == 0
-    assert 0 == 0
 
 
 def test_berserker():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
-    value_list = [(0.03, 0.2), (0.02, 0.1)]
+    value_list = [(0.3, 0.2), (0.2, 0.1)]
     for time, value in value_list:
         p.clear_action_tracker()
-        perk = Berserker((time, value))
+        perk = Berserker([(time, value)])
         perk.level_up()
         skilltree = SkillTree([AttackSkill([perk])])
         p.skilltree = skilltree
@@ -93,7 +91,7 @@ def test_berserker():
 
 def test_slavery():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
-    value_list = [10, 20]
+    value_list = [[(10,)], [(20,)]]
     for value in value_list:
         perk = Slavery(value)
         perk.level_up()
@@ -102,4 +100,30 @@ def test_slavery():
         c = create_test_cells(1, p1)[0]
         old_pop = c.population
         c.switch_player(p)
-        assert old_pop+value == c.population
+        assert old_pop+value[0][0] == c.population
+
+from InfectionSkill import *
+def test_infection_base():
+    p = Player("W", olive, yellow_green, yellow, 0.4, 70)
+    value_list = [(500,), (300,)]
+    for value in value_list:
+        perk = Base([value])
+        perk.level_up()
+        skilltree = SkillTree([InfectionSkill([perk])])
+        p.skilltree = skilltree
+        c = create_test_cells(1, p1, 1000)[0]
+        c.population = 1000
+        b = create_test_bubbles(1, p, 150)[0]
+        time = pygame.time.get_ticks()
+        b.collide(c)
+        old_pop = c.population
+        alpha = 50000/c.radius
+        c.grow(2*alpha)
+        assert old_pop == c.population
+        #assert time == 0
+        sleep(140/value[0])
+        c.grow(c.cycle_interval)
+        assert old_pop == c.population
+        sleep(10/value[0])
+        c.grow(c.cycle_interval)
+        assert old_pop != c.population
