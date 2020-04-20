@@ -8,17 +8,19 @@ class AttackPerk(Perk):
 
 class Base(AttackPerk):
     def __init__(self, values):
-        tooltip = "Boost attack by "+"%/".join(map(lambda x: str(int(x*100)), values))+"%"
-        super(Base, self).__init__("Base", tooltip=tooltip, tier=0, levels=len(values), values=values)
+        #tooltip = "Boost attack by "+"%/".join(map(lambda x: str(int(x*100)), values))+"%"
+        tooltip = "Boost attack by {}%"
+        super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
     def attack_modifier(self, info):
         return self.values[self.skilled]
 
 
 class Rage(AttackPerk):
-    def __init__(self, value):
-        tooltip = "Whenever a friendly cell is lost, attack is shortly (" + str(value[0]) + " seconds) increased by " + str(int(100*value[1])) + "%"
-        super(Rage, self).__init__("Rage", tooltip=tooltip, tier=0, levels=1, value=value)
+    def __init__(self, values):
+        #tooltip = "Whenever a friendly cell is lost, attack is shortly (" + str(value[0]) + " seconds) increased by " + str(int(100*value[1])) + "%"
+        tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}%"
+        super(Rage, self).__init__("Rage", tooltip=tooltip, tier=0, values=values)
 
     #TODO:
     def condition(self, player, time):
@@ -38,16 +40,18 @@ class Rage(AttackPerk):
 
 
 class Berserker(AttackPerk):
-    def __init__(self, value):
-        tooltip = "For every consecutive (within " + str(value[0]) + " seconds after the last) attack a cell orders, it's attack increases by " + str(int(100*value[1])) + "%"
-        super(Berserker, self).__init__("Berserker", tooltip=tooltip, tier=1, levels=1, value=value)
+    def __init__(self, values):
+        #tooltip = "For every consecutive (within " + str(value[0]) + " seconds after the last) attack a cell orders, it's attack increases by " + str(int(100*value[1])) + "%"
+        tooltip = "For every consecutive (within {} seconds after the last) attack a cell orders, it's attack increases by {}%"
+        super(Berserker, self).__init__("Berserker", tooltip=tooltip, tier=1, values=values)
 
     def get_condition_value(self):
-        return self.value[0]
+        if self.skilled > 0:
+            return self.value[self.skilled-1][0]
 
     def get_value(self):
         if self.skilled > 0:
-            return self.value[1]
+            return self.values[self.skilled-1][1]
         else:
             return 0
 
@@ -58,12 +62,16 @@ class Berserker(AttackPerk):
 
 
 class Slavery(AttackPerk):
-    def __init__(self, value):
-        tooltip = "Every newly conquered cell gains " + str(value) + " pop"
-        super(Slavery, self).__init__("Slavery", tooltip=tooltip, tier=2, levels=1, value=value)
+    def __init__(self, values):
+        #tooltip = "Every newly conquered cell gains " + str(value) + " pop"
+        tooltip = "Every newly conquered cell gains {} population"
+        super(Slavery, self).__init__("Slavery", tooltip=tooltip, tier=2, values=values)
 
     def get_value(self):
-        return self.value
+        if self.skilled > 0:
+            return self.values[self.skilled-1]
+        else:
+            return 0
 
 
 class AttackSkill(Skill):
