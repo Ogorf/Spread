@@ -61,7 +61,11 @@ class Skill:
                 x += w / len(perk_list)
 
     def attack_modifier(self, info):
-        return 0
+        result = 0
+        for perk in self.perks():
+            result += perk.attack_modifier(info)
+        return result
+
 
 
 class Perk:
