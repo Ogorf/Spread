@@ -38,7 +38,9 @@ class Game:
                     winner_bubble = b.collide_with_bubble(bubble)
                     if winner_bubble == bubble:
                         new_bubbles.remove(b)
-                        #new_bubbles += [winner_bubble]
+                        new_bubbles += [winner_bubble]
+                    elif winner_bubble == None:
+                        continue
                     fought = True
                     break
             if not fought:
