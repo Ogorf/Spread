@@ -42,7 +42,7 @@ class Skill:
         w2, h2 = text.get_size()
         window.blit(text, ((w - w2) / 2, h * Skill._header_spacing))
         pygame.draw.line(window, (0, 0, 0), (0, h2 + 2 * h * Skill._header_spacing),
-                         (w, h2 + 2 * h * Skill._header_spacing), width=int(min(w, h) * Skill._line_width))
+                         (w, h2 + 2 * h * Skill._header_spacing), int(min(w, h) * Skill._line_width))
 
         max_tier = len(self.tier_perk_dict)
         height_per_tier = (h - h2 - 2 * h * Skill._header_spacing) / max_tier
@@ -181,7 +181,7 @@ def empty():
 
 
 def skilltree_loop(window):
-    skilltree = empty_skilltree()
+    skilltree = empty()
 
     while True:
         # clock.tick(120)

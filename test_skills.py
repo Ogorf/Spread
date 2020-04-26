@@ -43,6 +43,13 @@ def test_fight():
         for (j, attack_modifier) in enumerate([0.1, -0.1]):
             assert fight(attackers[i], defenders[i], attack_modifier) == result[i][j]
 
+def test_fight_bubbles():
+    b1 = create_test_bubbles(1, p0, 1000)[0]
+    b2 = create_test_bubbles(1, p1, 300)[0]
+    new_b = b1.collide_with_bubble(b2)
+    assert b1.population == 700
+    assert new_b == b1
+
 #from AttackSkill import *
 import AttackSkill as AS
 def test_base():
@@ -53,8 +60,6 @@ def test_base():
         assert perk.values == [value]
         assert value[0] == perk.values[0][0]
         perk.level_up()
-        assert perk.skilled == 1
-        assert perk.values[perk.skilled-1][0] == value[0]
         assert perk.attack_modifier(None) == value[0]
         skilltree = SkillTree.SkillTree([AS.AttackSkill([perk])])
         p.skilltree = skilltree
@@ -72,7 +77,7 @@ def test_rage():
         pcells = create_test_cells(1, p, 1)
         a_bubbles = create_test_bubbles(1, p0, 10)
         for cell, bubble in zip(pcells, a_bubbles):
-            bubble.collide(cell)
+            bubble.collide_with_cell(cell)
         b = create_test_bubbles(1, p)[0]
         assert p.attack_modifier(b) == value
         sleep(time/2)
@@ -131,7 +136,7 @@ def test_infection_base():
         c.population = 1000
         b = create_test_bubbles(1, p, 150)[0]
         time = pygame.time.get_ticks()
-        b.collide(c)
+        b.collide_with_cell(c)
         old_pop = c.population
         alpha = 50000/c.radius
         c.grow(2*alpha)

@@ -43,28 +43,42 @@ class Bubble:
 
     def __init__(self, destination, mother, time):
         self.creation_time = time
-        self.xcord = mother.xcord
-        self.ycord = mother.ycord
-        self.radius = int(math.sqrt(mother.population) * 10)
+        self.center = mother.center
         self.colour = mother.core_colour
         self.destination = destination
         self.velocity = mother.velocity
         self.player = mother.player
         self.population = int(mother.population)
+        self.radius = population_to_radius(self.population)
         self.mother = mother
 
+    def update_radius(self):
+        self.radius = population_to_radius(self.population)
+
     def move(self, dt):
-        radians = math.atan2(self.destination[1] - self.ycord, self.destination[0] - self.xcord)
+        radians = math.atan2(self.destination[1] - self.center[1], self.destination[0] - self.center[0])
         direction = (math.cos(radians), math.sin(radians))
-        distance = math.hypot(self.xcord - self.destination[0], self.ycord - self.destination[1])
+        distance = math.hypot(self.center[0] - self.destination[0], self.center[1] - self.destination[1])
         if distance > self.velocity * dt:
-            self.xcord += direction[0] * self.velocity * dt
-            self.ycord += direction[1] * self.velocity * dt
+            self.center = (int(self.center[0]+direction[0]*self.velocity*dt), int(self.center[1]+direction[1]*self.velocity*dt))
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.colour, (int(self.xcord), int(self.ycord)), self.radius)
+        pygame.draw.circle(screen, self.colour, self.center, self.radius)
 
-    def collide(self, cell):
+    def collide_with_bubble(self, bubble): # return winner
+        if self.player != bubble.player:
+            attack_modifier = self.player.attack_modifier(self)-bubble.player.attack_modifier(self)
+            result = fight(self.population, bubble.population, attack_modifier)
+            if result >= 0:
+                bubble.population = result
+                bubble.update_radius()
+                return bubble
+            else:
+                self.population = -result
+                self.update_radius()
+                return self
+
+    def collide_with_cell(self, cell):
         if self.player == cell.player:
             cell.population += self.population
         else:
@@ -81,8 +95,7 @@ class Bubble:
 class Cell:
 
     def __init__(self, center, radius, player, population, img_path=img_path):
-        self.xcord = center[0]
-        self.ycord = center[1]
+        self.center = center
         self.radius = radius
         self.cell_colour = player.cell_colour
         self.pop_colour = player.pop_colour
@@ -103,15 +116,15 @@ class Cell:
         return b
 
     def draw(self, window):
-        pygame.draw.circle(window, self.cell_colour, (int(self.xcord), int(self.ycord)), self.radius)
-        pygame.draw.circle(window, self.pop_colour, (int(self.xcord), int(self.ycord)),
+        pygame.draw.circle(window, self.cell_colour, self.center, self.radius)
+        pygame.draw.circle(window, self.pop_colour, self.center,
                            int(math.sqrt(self.population) * 10))
         if self.pop_colour != grey:                                         # checks if player is neutral
-            pygame.draw.circle(window, self.core_colour, [int(self.xcord), int(self.ycord)],
+            pygame.draw.circle(window, self.core_colour, self.center,
                                int(math.sqrt(self.population / 2) * 10))
         poptext = font.render(str(self.population), 1, (0, 0, 0))
-        window.blit(poptext, (self.xcord - 3, self.ycord - 5))
-        window.blit(self.img, (self.xcord - self.radius, self.ycord - self.radius))
+        window.blit(poptext, (self.center[0] - 3, self.center[1] - 5))
+        window.blit(self.img, (self.center[0] - self.radius, self.center[1] - self.radius))
 
     def grow(self, dt):
         self.time_cycle += dt
@@ -152,7 +165,7 @@ class Cell:
     def blow(self, cell_list):
         enough_space = True
         for cell in filter(lambda x: x != self, cell_list):
-            if math.hypot(self.xcord - cell.xcord, self.ycord - cell.ycord) < cell.radius + self.radius + 5:
+            if math.hypot(self.center[0] - cell.center[0], self.center[1] - cell.center[1]) < cell.radius + self.radius + 5:
                 enough_space = False
         if enough_space:
             self.radius += 1
@@ -169,3 +182,10 @@ def fight(a, d, am):
             return -(a-int(d*(1-am)))
         else:
             return int(d-a/(1-am))
+
+def collides(center1, center2, radius1, radius2):
+    return (center1[0]-center2[0])**2+(center1[1]-center2[1])**2 <= max(radius1, radius2)**2
+
+def population_to_radius(n):
+    return int(math.sqrt(n) * 10)
+
