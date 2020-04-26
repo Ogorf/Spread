@@ -2,8 +2,9 @@ from SkillTree import *
 
 
 class AttackPerk(Perk):
-    def attack_modifier(self, info):
-        return 0
+    pass
+    #def attack_modifier(self, info):
+    #    return 0
 
 
 class Base(AttackPerk):
