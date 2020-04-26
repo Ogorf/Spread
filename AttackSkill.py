@@ -1,4 +1,5 @@
 from SkillTree import *
+from SkillTree import Skill
 
 
 class AttackPerk(Perk):
@@ -13,17 +14,14 @@ class Base(AttackPerk):
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
     def attack_modifier(self, info):
-        if self.skilled > 0:
-            return self.values[self.skilled-1][0]
-        else:
-            return 0
+        return self.values[self.skilled][0]
 
 
 class Rage(AttackPerk):
     def __init__(self, values):
         #tooltip = "Whenever a friendly cell is lost, attack is shortly (" + str(value[0]) + " seconds) increased by " + str(int(100*value[1])) + "%"
         tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}%"
-        super(Rage, self).__init__("Rage", tooltip=tooltip, tier=0, values=values)
+        super(Rage, self).__init__("Rage", tooltip=tooltip, tier=1, values=values)
 
     #TODO:
     def condition(self, player, time):
@@ -57,6 +55,8 @@ class Berserker(AttackPerk):
     def get_condition_value(self):
         if self.skilled > 0:
             return self.values[self.skilled-1][0]
+        else:
+            return 0
 
     def get_value(self):
         if self.skilled > 0:
@@ -72,7 +72,7 @@ class Berserker(AttackPerk):
 
 class Slavery(AttackPerk):
     def __init__(self, values):
-        #tooltip = "Every newly conquered cell gains " + str(value) + " pop"
+        # tooltip = "Every newly conquered cell gains " + str(value) + " pop"
         tooltip = "Every newly conquered cell gains {} population"
         super(Slavery, self).__init__("Slavery", tooltip=tooltip, tier=2, values=values)
 
@@ -92,3 +92,4 @@ class AttackSkill(Skill):
         for perk in self.perks():
             result += perk.attack_modifier(info)
         return result
+

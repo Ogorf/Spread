@@ -16,7 +16,7 @@ p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
 # c3 = Cell((600, 300), 80, p0, 100)
 
 
-def create_test_cells(amount: int, p: Player, pop = 100):
+def create_test_cells(amount: int, p: Player, pop=100):
     result = []
     for i in range(0, amount):
         result += [Cell((i*200, i*100), 1000, p, pop)]

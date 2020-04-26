@@ -27,7 +27,6 @@ class Player:
         self.startpop = startpop
         self.action_tracker = ActionTracker(self)
         self.skilltree = empty_skilltree()
-        self.action_tracker = ActionTracker(self)
 
     def attack_modifier(self, bubble):
         t = pygame.time.get_ticks()
@@ -95,7 +94,6 @@ class Cell:
         self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius * 2, radius * 2))
         self.time_cycle = 0
         self.cycle_interval = int(50000/self.radius)
-        self.counter = 0 # TODO remove
 
     def attack(self, enemypos):
         self.population = math.ceil(self.population / 2)
@@ -116,24 +114,23 @@ class Cell:
         window.blit(self.img, (self.xcord - self.radius, self.ycord - self.radius))
 
     def grow(self, dt):
+        self.time_cycle += dt
         if self.population > self.capacity:
             self.population = self.capacity
-        self.time_cycle += dt
-        if self.time_cycle > self.cycle_interval:
-            current_time = pygame.time.get_ticks()
-            cycles = self.time_cycle/self.cycle_interval
-            self.time_cycle %= self.cycle_interval
-            for (t, c, b) in self.player.action_tracker.received_attacks:
-                if c == self:
-                    info = {}
-                    info["current_time"] = current_time
-                    info["arrival_time"] = t
-                    info["bubble"] = b
-                    perk = b.player.skilltree.find_perk("Infection", "Base")
-                    if perk != None and perk.get_value(info):
-                        return
-            if self.population < self.capacity and self.player.name != "0":
-                self.population += 1
+        else:
+            if self.time_cycle > self.cycle_interval:
+                current_time = pygame.time.get_ticks()
+                cycles = int(self.time_cycle / self.cycle_interval)
+                self.time_cycle %= self.cycle_interval
+                for (t, c, b) in self.player.action_tracker.received_attacks:
+                    if c == self:
+                        info = {"current_time": current_time, "arrival_time": t, "bubble": b}
+                        perk = b.player.skilltree.find_perk("Infection", "Base")
+                        if perk is not None and perk.get_value(info):
+                            return
+                if self.population < self.capacity and self.player.name != "0":
+                    self.population += cycles
+
 
     def defended(self, bubble):
         passed_time = pygame.time.get_ticks()

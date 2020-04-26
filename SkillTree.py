@@ -54,17 +54,14 @@ class Skill:
         perk_font = pygame.font.SysFont("comincsans", int(min(perk_width, height_per_tier) / 5))
         # draw perks
         for (perk_tier, perk_list) in self.tier_perk_dict.items():
-            y = h2 + 2 * h * Skill._header_spacing + height_per_tier * (perk_tier + 0.5)
+            y = h2 + 2 * h * Skill._header_spacing + height_per_tier * (max_tier - perk_tier - 0.5)
             x = w / len(perk_list) / 2
             for perk in perk_list:
                 perk.draw(window, (x, y), (w / len(perk_list), height_per_tier), perk_font)
                 x += w / len(perk_list)
 
     def attack_modifier(self, info):
-        result = 0
-        for perk in self.perks():
-            result += perk.attack_modifier(info)
-        return result
+        return 0
 
 
 class Perk:
@@ -75,7 +72,7 @@ class Perk:
         l = list(zip(*self.values))
         l = map(lambda x: "/".join(list(map(lambda y: str(y), x))), l)
         l = list(l)
-        self.tooltip = kwargs.pop("tooltip", "").format(*l)#*list(zip(self.values)))
+        self.tooltip = kwargs.pop("tooltip", "").format(*l)  # *list(zip(self.values)))
         self.levels = len(self.values)
         self.skilled = kwargs.pop("skilled", 0)
         self.__dict__.update(**kwargs)
@@ -87,7 +84,7 @@ class Perk:
         return self.skilled > 0
 
     def draw_tooltip(self, window, x, y):
-        if self.rendered_tooltip == None:
+        if self.rendered_tooltip is None:
             self.rendered_tooltip = SkillTree._tooltip_font.render(self.tooltip, 1, (50, 50, 50))
         w, h = self.rendered_tooltip.get_size()
         window.blit(self.rendered_tooltip, (x - w, y - h))
@@ -103,7 +100,8 @@ class Perk:
         bg_color = (255 - l * (255 - dark_blue[0]), 255 - l * (255 - dark_blue[1]), 255 - l * (255 - dark_blue[2]))
         pygame.draw.rect(window, bg_color, self.bbox)
         if self.rendered_text is None:
-            self.rendered_text = font.render(self.name + " (" + str(self.skilled) + "/" + str(self.levels) + ")", 1, (0, 0, 0))
+            self.rendered_text = font.render(self.name + " (" + str(self.skilled) + "/" + str(self.levels) + ")", 1,
+                                             (0, 0, 0))
         a, b = self.rendered_text.get_size()
         window.blit(self.rendered_text, (center[0] - a / 2, center[1] - b / 2))
         pygame.draw.rect(window, (0, 0, 0), self.bbox, 3)
@@ -111,8 +109,10 @@ class Perk:
     def attack_modifier(self, info):
         return 0
 
+
 from AttackSkill import *
 from InfectionSkill import *
+# from DefenseSkill import *
 
 
 class SkillTree:
@@ -174,6 +174,7 @@ def empty_skilltree():
     skilltree = SkillTree([attack, infection])  # , defense])
     return skilltree
 
+
 def skilltree_loop(window):
     skilltree = empty_skilltree()
 
@@ -206,3 +207,10 @@ def skilltree_loop(window):
                     perk.level_up()
 
         pygame.display.update()
+
+
+perk1 = Slavery([[10]])
+perk1.level_up()
+perk2 = Base([[0.5, 0.5]])
+perk2.level_up()
+skilltree = SkillTree([AttackSkill([perk1, perk2])])
