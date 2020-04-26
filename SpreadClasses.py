@@ -7,7 +7,7 @@ pygame.init()
 img_path = 'img/cell1.png'
 
 
-class ActionTracker:
+class PlayerActionTracker:
     def __init__(self, player):
         self.player = player
         self.cell_loose_history = [] # should contain pairs of (time, cell) where time is the time that passed until player lost cell
@@ -25,7 +25,7 @@ class Player:
         self.core_colour = core_colour
         self.velocity = velocity
         self.startpop = startpop
-        self.action_tracker = ActionTracker(self)
+        self.action_tracker = PlayerActionTracker(self)
         self.skilltree = SkillTree.empty()
 
     def attack_modifier(self, bubble):
@@ -39,7 +39,7 @@ class Player:
         return self.skilltree.defense_modifier(info)
 
     def clear_action_tracker(self):
-        self.action_tracker = ActionTracker(self)
+        self.action_tracker = PlayerActionTracker(self)
 
 class Bubble:
 
