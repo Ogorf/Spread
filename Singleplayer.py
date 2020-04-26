@@ -18,7 +18,7 @@ class Singleplayer:
         self.screen.fill(dark_blue)
 
         for obj in selected:
-            pygame.draw.circle(self.screen, (255, 255, 255), (obj.xcord, obj.ycord), obj.radius + 2)
+            pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 2)
 
         for button in self.buttons:
             button.draw(self.screen)
@@ -53,7 +53,7 @@ class Singleplayer:
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
                     for c in self.cells:
-                        if math.hypot(pos[0] - c.xcord, pos[1] - c.ycord) < c.radius:
+                        if math.hypot(pos[0] - c.center[0], pos[1] - c.center[1]) < c.radius:
                             self.game.order_attacks(selected, c)
                             break
 
@@ -66,7 +66,7 @@ class Singleplayer:
             if pygame.mouse.get_pressed():
                 pos = pygame.mouse.get_pos()
                 for c in self.cells:
-                    if math.hypot(c.xcord - pos[0], c.ycord - pos[1]) < c.radius:
+                    if math.hypot(c.center[0] - pos[0], c.center[1] - pos[1]) < c.radius:
                         if c not in selected:           # add (later) and obj.player == p1
                             selected.append(c)
 

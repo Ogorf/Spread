@@ -9,9 +9,9 @@ class AdjustRect:
         self.screen = screen
         self.cell = cell
         self.textbox = [
-            TextBox("X-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 20, 70, 20), cell.xcord, grey,
+            TextBox("X-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 20, 70, 20), cell.center[0], grey,
                     (255, 255, 255)),
-            TextBox("Y-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 60, 70, 20), cell.ycord, grey,
+            TextBox("Y-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 60, 70, 20), cell.center[1], grey,
                     (255, 255, 255)),
             TextBox("Radius: (0 to remove)", (rect[0] + rect[3] - 170, rect[1] + 100, 70, 20), cell.radius, grey,
                     (255, 255, 255)),
@@ -47,21 +47,21 @@ class MapEditor:
         cell_is_near = False
 
         for cell in self.cells:
-            if math.hypot(pos[0] - cell.xcord, pos[1] - cell.ycord) < cell.radius + 25:
+            if math.hypot(pos[0] - cell.center[0], pos[1] - cell.center[1]) < cell.radius + 25:
                 cell_is_near = True
-                if math.hypot(pos[0] - cell.xcord, pos[1] - cell.ycord) < cell.radius:
+                if math.hypot(pos[0] - cell.center[0], pos[1] - cell.center[1]) < cell.radius:
                     cell.blow(self.cells)
         if not cell_is_near:
             self.cells.append(Cell((pos[0], pos[1]), 20, p0, 0))
 
     def adjust_cell(self, cell):
-        copy = (cell.xcord, cell.ycord, cell.radius, cell.player, cell.population)
+        copy = (cell.center, cell.radius, cell.player, cell.population)
         for box in self.adjustrect[0].textbox:
             if box.text:
                 if box.name == "X-Coordinate: " and int(box.text) < window_width:
-                    cell.xcord = int(box.text)
+                    cell.center = (int(box.text), cell.center[1])
                 elif box.name == "Y-Coordinate: " and int(box.text) < window_height:
-                    cell.ycord = int(box.text)
+                    cell.center = (cell.center[0], int(box.text))
                 elif box.name == "Radius: (0 to remove)":
                     if int(box.text) in range(20, window_width + 1):
                         cell.radius = int(box.text)
@@ -85,14 +85,13 @@ class MapEditor:
                         cell.population = int(math.pow(cell.radius, 2) / 100)
         enough_space = True
         for c in filter(lambda x: x != cell, self.cells):
-            if math.hypot(cell.xcord - c.xcord, cell.ycord - c.ycord) < c.radius + cell.radius + 4:
+            if math.hypot(cell.center[0] - c.center[0], cell.center[1] - c.center[1]) < c.radius + cell.radius + 4:
                 enough_space = False
         if not enough_space:
-            cell.xcord = copy[0]
-            cell.ycord = copy[1]
-            cell.radius = copy[2]
-            cell.switch_player(copy[3])
-            cell.population = copy[4]
+            cell.center = copy[0]
+            cell.radius = copy[1]
+            cell.switch_player(copy[2])
+            cell.population = copy[3]
             self.messagebox.append(MessageBox(self.screen, "Cell is to close to another cell!", font))
 
     def draw(self):
@@ -113,10 +112,10 @@ class MapEditor:
         if self.cells:
             for c in filter(lambda x: x != self.cells[0], self.cells):
                 maps.writelines(
-                    ["((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ",
+                    ["((", str(c.center[0]), ", ", str(c.center[1]), "), ", str(c.radius), ", ",
                      "p" + str(c.player.name), ", ", str(c.population), "),\n"])
             c = self.cells[0]
-            maps.writelines(["((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ",
+            maps.writelines(["((", str(c.center[0]), ", ", str(c.center[1]), "), ", str(c.radius), ", ",
                              "p" + str(c.player.name), ", ", str(c.population), ")]\n"])
 
         self.buttons.clear()
@@ -137,7 +136,7 @@ class MapEditor:
                 if event.type == pygame.MOUSEBUTTONUP:
                     if not self.adjustrect and not self.messagebox:
                         for cell in self.cells:
-                            if math.hypot(event.pos[0] - cell.xcord, event.pos[1] - cell.ycord) < cell.radius:
+                            if math.hypot(event.pos[0] - cell.center[0], event.pos[1] - cell.center[1]) < cell.radius:
                                 self.adjustrect.append(AdjustRect(self.screen, (475, 200, 350, 400), cell))
 
                     # adjusts cell once AdjustRect is closed
