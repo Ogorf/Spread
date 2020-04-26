@@ -18,3 +18,6 @@ class Base(InfectionPerk):
 class InfectionSkill(Skill):
     def __init__(self, l):
         super(InfectionSkill, self).__init__("Infection", l)
+
+def empty():
+    return InfectionSkill([Base([(50,), (33,), (25,)])])

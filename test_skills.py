@@ -1,11 +1,11 @@
 from time import *
 from SpreadClasses import *
-from SkillTree import *
+import SkillTree
 
 pygame.init()
 pygame.display.set_mode((800, 600))
 
-skilltree = empty_skilltree()
+skilltree = SkillTree.empty()
 p0 = Player("0", dim_grey, grey, light_grey, 0.03, 20)
 p1 = Player("1", maroon, brown, peru, 0.12, 30)
 p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
@@ -43,19 +43,20 @@ def test_fight():
         for (j, attack_modifier) in enumerate([0.1, -0.1]):
             assert fight(attackers[i], defenders[i], attack_modifier) == result[i][j]
 
-from AttackSkill import *
+#from AttackSkill import *
+import AttackSkill as AS
 def test_base():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
     value_list = [(0.2,), (0.3,)]
     for value in value_list:
-        perk = Base([value])
+        perk = AS.Base([value])
         assert perk.values == [value]
         assert value[0] == perk.values[0][0]
         perk.level_up()
         assert perk.skilled == 1
         assert perk.values[perk.skilled-1][0] == value[0]
         assert perk.attack_modifier(None) == value[0]
-        skilltree = SkillTree([AttackSkill([perk])])
+        skilltree = SkillTree.SkillTree([AS.AttackSkill([perk])])
         p.skilltree = skilltree
         #assert p.attack_modifier(None) == value[0]
 
@@ -64,9 +65,9 @@ def test_rage():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
     value_list = [(0.3, 0.2), (0.2, 0.1)]
     for time, value in value_list:
-        perk = Rage([(time, value)])
+        perk = AS.Rage([(time, value)])
         perk.level_up()
-        skilltree = SkillTree([AttackSkill([perk])])
+        skilltree = SkillTree.SkillTree([AS.AttackSkill([perk])])
         p.skilltree = skilltree
         pcells = create_test_cells(1, p, 1)
         a_bubbles = create_test_bubbles(1, p0, 10)
@@ -84,9 +85,9 @@ def test_berserker():
     value_list = [(0.3, 0.2), (0.2, 0.1)]
     for time, value in value_list:
         p.clear_action_tracker()
-        perk = Berserker([(time, value)])
+        perk = AS.Berserker([(time, value)])
         perk.level_up()
-        skilltree = SkillTree([AttackSkill([perk])])
+        skilltree = SkillTree.SkillTree([AS.AttackSkill([perk])])
         p.skilltree = skilltree
         pcells = create_test_cells(2, p)
         b1 = pcells[0].attack((0, 0))
@@ -108,23 +109,23 @@ def test_slavery():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
     value_list = [[(10,)], [(20,)]]
     for value in value_list:
-        perk = Slavery(value)
+        perk = AS.Slavery(value)
         perk.level_up()
-        skilltree = SkillTree([AttackSkill([perk])])
+        skilltree = SkillTree.SkillTree([AS.AttackSkill([perk])])
         p.skilltree = skilltree
         c = create_test_cells(1, p1)[0]
         old_pop = c.population
         c.switch_player(p)
         assert old_pop+value[0][0] == c.population
 
-from InfectionSkill import *
+import InfectionSkill as IS
 def test_infection_base():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
     value_list = [(500,), (300,)]
     for value in value_list:
-        perk = Base([value])
+        perk = IS.Base([value])
         perk.level_up()
-        skilltree = SkillTree([InfectionSkill([perk])])
+        skilltree = SkillTree.SkillTree([IS.InfectionSkill([perk])])
         p.skilltree = skilltree
         c = create_test_cells(1, p1, 1000)[0]
         c.population = 1000
