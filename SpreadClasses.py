@@ -69,6 +69,7 @@ class Bubble:
         if self.player != bubble.player:
             attack_modifier = self.player.attack_modifier(self)-bubble.player.attack_modifier(self)
             result = fight(self.population, bubble.population, attack_modifier)
+            print(self.population, bubble.population, result)
             if result >= 0:
                 bubble.population = result
                 bubble.update_radius()
@@ -77,6 +78,8 @@ class Bubble:
                 self.population = -result
                 self.update_radius()
                 return self
+        else:
+            return None
 
     def collide_with_cell(self, cell):
         if self.player == cell.player:
