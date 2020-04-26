@@ -3,9 +3,8 @@ from SkillTree import Skill
 
 
 class AttackPerk(Perk):
-    pass
-    #def attack_modifier(self, info):
-    #    return 0
+    def attack_modifier(self, info):
+        return 0
 
 
 class Base(AttackPerk):
@@ -96,4 +95,7 @@ class AttackSkill(Skill):
         for perk in self.perks():
             result += perk.attack_modifier(info)
         return result
+
+def empty():
+    return AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
 

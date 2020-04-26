@@ -114,8 +114,8 @@ class Perk:
         return 0
 
 
-from AttackSkill import *
-from InfectionSkill import *
+import AttackSkill
+import InfectionSkill
 # from DefenseSkill import *
 
 
@@ -167,15 +167,16 @@ class SkillTree:
         return None
 
 
-def empty_skilltree():
-    attack = AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
-    infection = InfectionSkill([Base([(50,), (33,), (25,)])])
+def empty():
+    #attack = AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
+    #infection = InfectionSkill([Base([(50,), (33,), (25,)])])
+
     # defense1 = Perk("Base", "Increases defense by 10/20/30%", 0, 3)
     # defense2 = Perk("Loots of Victory", "For every successful defense, the cell gains +5 pop", 1, 1)
     # defense3 = Perk("Preparation", "For every consecutive second a cell has neither defended nor attacked, it gains +1% defense", 1, 1)
     # defense4 = Perk("Membran", "The first 10 attackers of every attacking enemy bubble die to the membran before doing damage", 2, 1)
     # defense = Skill("Defense", [defense1, defense2, defense3, defense4])
-    skilltree = SkillTree([attack, infection])  # , defense])
+    skilltree = SkillTree([AttackSkill.empty(), InfectionSkill.empty()])  # , defense])
     return skilltree
 
 
@@ -211,10 +212,3 @@ def skilltree_loop(window):
                     perk.level_up()
 
         pygame.display.update()
-
-
-perk1 = Slavery([[10]])
-perk1.level_up()
-perk2 = Base([[0.5, 0.5]])
-perk2.level_up()
-skilltree = SkillTree([AttackSkill([perk1, perk2])])

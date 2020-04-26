@@ -1,6 +1,6 @@
 from Utils import *
 import math
-from SkillTree import empty_skilltree
+import SkillTree
 
 pygame.init()
 
@@ -26,7 +26,7 @@ class Player:
         self.velocity = velocity
         self.startpop = startpop
         self.action_tracker = ActionTracker(self)
-        self.skilltree = empty_skilltree()
+        self.skilltree = SkillTree.empty()
 
     def attack_modifier(self, bubble):
         t = pygame.time.get_ticks()
