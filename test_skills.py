@@ -44,6 +44,22 @@ def test_fight():
             assert fight(attackers[i], defenders[i], attack_modifier) == result[i][j]
 
 from AttackSkill import *
+def test_base():
+    p = Player("W", olive, yellow_green, yellow, 0.4, 70)
+    value_list = [(0.2,), (0.3,)]
+    for value in value_list:
+        perk = Base([value])
+        assert perk.values == [value]
+        assert value[0] == perk.values[0][0]
+        perk.level_up()
+        assert perk.skilled == 1
+        assert perk.values[perk.skilled-1][0] == value[0]
+        assert perk.attack_modifier(None) == value[0]
+        skilltree = SkillTree([AttackSkill([perk])])
+        p.skilltree = skilltree
+        #assert p.attack_modifier(None) == value[0]
+
+
 def test_rage():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
     value_list = [(0.3, 0.2), (0.2, 0.1)]
@@ -62,7 +78,6 @@ def test_rage():
         assert p.attack_modifier(b) == value
         sleep(time)
         assert p.attack_modifier(b) == 0
-
 
 def test_berserker():
     p = Player("W", olive, yellow_green, yellow, 0.4, 70)
