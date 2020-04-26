@@ -6,7 +6,7 @@ class InfectionPerk(Perk):
 
 class Base(InfectionPerk):
     def __init__(self, values):
-        tooltip = "Cells u attacked stop growing for attacker divided by {} of seconds"
+        tooltip = "Cells you attacked stop growing for attacker divided by {} of seconds"
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
     def get_value(self, info):

@@ -39,7 +39,7 @@ class Game:
                     if winner_bubble == bubble:
                         new_bubbles.remove(b)
                         new_bubbles += [winner_bubble]
-                    elif winner_bubble == None:
+                    elif winner_bubble is None:
                         continue
                     fought = True
                     break

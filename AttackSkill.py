@@ -1,5 +1,4 @@
 from SkillTree import *
-from SkillTree import Skill
 
 
 class AttackPerk(Perk):

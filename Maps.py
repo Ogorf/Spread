@@ -1,6 +1,7 @@
 from SpreadClasses import Player
 from Utils import *
-import SkillTree
+from ManualTest import skilltree1, skilltree2
+
 
 pygame.display.set_mode((window_width, window_height))
 
@@ -9,7 +10,8 @@ p1 = Player("1", maroon, brown, peru, 0.12, 30)
 p2 = Player("2", olive, yellow_green, yellow, 0.4, 70)
 p3 = Player("3", indian_red, light_coral, light_salmon, 0.2, 0)
 p4 = Player("4", dark_magenta, medium_violet_red, magenta, 0.1, 10)
-p1.skilltree = SkillTree.empty()
+p1.skilltree = skilltree1
+p2.skilltree = skilltree2
 
 
 

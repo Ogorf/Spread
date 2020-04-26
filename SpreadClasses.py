@@ -33,8 +33,10 @@ class Player:
         info = {"bubble": bubble, "time": t, "player": self}
         return self.skilltree.attack_modifier(info)
 
-    def defense_modifier(self):
-        return 0
+    def defense_modifier(self, bubble):
+        t = pygame.time.get_ticks()
+        info = {"bubble": bubble, "time": t, "player": self}
+        return self.skilltree.defense_modifier(info)
 
     def clear_action_tracker(self):
         self.action_tracker = ActionTracker(self)
@@ -65,7 +67,7 @@ class Bubble:
     def draw(self, screen):
         pygame.draw.circle(screen, self.colour, (int(self.center[0]), int(self.center[1])), self.radius)
 
-    def collide_with_bubble(self, bubble): # return winner
+    def collide_with_bubble(self, bubble):     # return winner
         if self.player != bubble.player:
             attack_modifier = self.player.attack_modifier(self)-bubble.player.attack_modifier(self)
             result = fight(self.population, bubble.population, attack_modifier)
@@ -85,11 +87,15 @@ class Bubble:
         if self.player == cell.player:
             cell.population += self.population
         else:
-            attack_modifier = self.player.attack_modifier(self)-cell.player.defense_modifier()
+            attack_modifier = self.player.attack_modifier(self)-cell.player.defense_modifier(cell)
             result = fight(self.population, cell.population, attack_modifier)
             if result >= 0:
                 cell.population = result
                 cell.defended(self)
+                perk = cell.player.skilltree.find_perk("Defense", "Recover")
+                if perk is not None and perk.get_value():
+                    cell.population += perk.get_value()
+
             else:
                 cell.population = -result
                 cell.switch_player(self.player)
@@ -138,7 +144,7 @@ class Cell:
                 current_time = pygame.time.get_ticks()
                 cycles = int(self.time_cycle / self.cycle_interval)
                 self.time_cycle %= self.cycle_interval
-                for (t, c, b) in self.player.action_tracker.received_attacks:
+                for (t, c, b) in self.player.action_tracker.received_attacks:   # TODO: fix iteration über länger werdende liste
                     if c == self:
                         info = {"current_time": current_time, "arrival_time": t, "bubble": b}
                         perk = b.player.skilltree.find_perk("Infection", "Base")
