@@ -24,7 +24,7 @@ class Game:
     def tick(self, dt, current_time):
         # grow cells
         for cell in self.cells:
-            cell.grow(dt)
+            cell.grow(dt, current_time)
         # moves bubbles
         for bubble in self.bubbles:
             bubble.move(dt)

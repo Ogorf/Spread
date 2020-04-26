@@ -139,12 +139,12 @@ def test_infection_base():
         b.collide_with_cell(c)
         old_pop = c.population
         alpha = 50000/c.radius
-        c.grow(2*alpha)
+        c.grow(2*alpha, pygame.time.get_ticks())
         assert old_pop == c.population
         #assert time == 0
         sleep(140/value[0])
-        c.grow(c.cycle_interval)
+        c.grow(c.cycle_interval, pygame.time.get_ticks())
         assert old_pop == c.population
         sleep(10/value[0])
-        c.grow(c.cycle_interval)
+        c.grow(c.cycle_interval, pygame.time.get_ticks())
         assert old_pop != c.population

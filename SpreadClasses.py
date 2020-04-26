@@ -101,6 +101,14 @@ class Bubble:
                 cell.switch_player(self.player)
 
 
+class CellActionTracker:
+
+    def __init__(self, cell):
+        self.cell = cell
+        self.ordered_attacks = [] # (time, bubble)
+        self.defended_attacks = [] # (time, bubble)
+        self.conquered_list = [] # (time, player)
+
 class Cell:
 
     def __init__(self, center, radius, player, population, img_path=img_path):
@@ -116,11 +124,13 @@ class Cell:
         self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius * 2, radius * 2))
         self.time_cycle = 0
         self.cycle_interval = int(50000/self.radius)
+        self.action_tracker = CellActionTracker(self)
 
     def attack(self, enemypos):
         self.population = math.ceil(self.population / 2)
         time = pygame.time.get_ticks()
         b = Bubble(enemypos, self, time)
+        self.action_tracker.ordered_attacks += [(time, b)]
         self.player.action_tracker.ordered_attacks += [(time, b)]
         return b
 
@@ -135,31 +145,31 @@ class Cell:
         window.blit(poptext, (self.center[0] - 3, self.center[1] - 5))
         window.blit(self.img, (self.center[0] - self.radius, self.center[1] - self.radius))
 
-    def grow(self, dt):
+    def grow(self, dt, current_time):
         self.time_cycle += dt
         if self.population > self.capacity:
             self.population = self.capacity
         else:
             if self.time_cycle > self.cycle_interval:
-                current_time = pygame.time.get_ticks()
                 cycles = int(self.time_cycle / self.cycle_interval)
                 self.time_cycle %= self.cycle_interval
-                for (t, c, b) in self.player.action_tracker.received_attacks:   # TODO: fix iteration über länger werdende liste
-                    if c == self:
-                        info = {"current_time": current_time, "arrival_time": t, "bubble": b}
-                        perk = b.player.skilltree.find_perk("Infection", "Base")
-                        if perk is not None and perk.get_value(info):
-                            return
+                for (t, b) in self.action_tracker.defended_attacks:   # TODO: fix iteration über länger werdende liste
+                    info = {"current_time": current_time, "arrival_time": t, "bubble": b}
+                    perk = b.player.skilltree.find_perk("Infection", "Base")
+                    if perk is not None and perk.get_value(info):
+                        return
                 if self.population < self.capacity and self.player.name != "0":
                     self.population += cycles
 
 
     def defended(self, bubble):
         passed_time = pygame.time.get_ticks()
+        self.action_tracker.defended_attacks += [(passed_time, bubble)]
         self.player.action_tracker.received_attacks += [(passed_time, self, bubble)]
 
     def switch_player(self, new_player):
         passed_time = pygame.time.get_ticks()
+        self.action_tracker.conquered_list += [(passed_time, new_player)]
         new_player.action_tracker.cell_win_history += [(passed_time, self)]
         self.player.action_tracker.cell_loose_history += [(passed_time, self)]
         self.player = new_player
