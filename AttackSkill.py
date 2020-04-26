@@ -13,7 +13,10 @@ class Base(AttackPerk):
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
     def attack_modifier(self, info):
-        return self.values[self.skilled][0]
+        if self.skilled > 0:
+            return self.values[self.skilled-1][0]
+        else:
+            return 0
 
 
 class Rage(AttackPerk):
