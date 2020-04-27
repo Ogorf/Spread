@@ -8,7 +8,6 @@ class AttackPerk(Perk):
 
 class Base(AttackPerk):
     def __init__(self, values):
-        #tooltip = "Boost attack by "+"%/".join(map(lambda x: str(int(x*100)), values))+"%"
         tooltip = "Boost attack by {}%"
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
 
@@ -21,11 +20,10 @@ class Base(AttackPerk):
 
 class Rage(AttackPerk):
     def __init__(self, values):
-        #tooltip = "Whenever a friendly cell is lost, attack is shortly (" + str(value[0]) + " seconds) increased by " + str(int(100*value[1])) + "%"
         tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}%"
         super(Rage, self).__init__("Rage", tooltip=tooltip, tier=1, values=values)
 
-    #TODO:
+    # TODO:
     def condition(self, player, time):
         return len(list(filter(lambda time_cell: time-time_cell[0] <= 1000*self.get_condition_value(), player.action_tracker.cell_loose_history))) > 0
 
@@ -50,8 +48,7 @@ class Rage(AttackPerk):
 
 class Berserker(AttackPerk):
     def __init__(self, values):
-        #tooltip = "For every consecutive (within " + str(value[0]) + " seconds after the last) attack a cell orders, it's attack increases by " + str(int(100*value[1])) + "%"
-        tooltip = "For every consecutive (within {} seconds after the last) attack a cell orders, it's attack increases by {}%"
+        tooltip = "For every attack a cell has ordered within the last {} seconds, it's attack increases by {}%"
         super(Berserker, self).__init__("Berserker", tooltip=tooltip, tier=1, values=values)
 
     def get_condition_value(self):
@@ -95,6 +92,6 @@ class AttackSkill(Skill):
             result += perk.attack_modifier(info)
         return result
 
-def empty():
-    return AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(2, 0.05)]), Slavery([(10,)])])
 
+def empty():
+    return AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(5, 0.05)]), Slavery([(10,)])])

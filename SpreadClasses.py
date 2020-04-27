@@ -41,6 +41,7 @@ class Player:
     def clear_action_tracker(self):
         self.action_tracker = PlayerActionTracker(self)
 
+
 class Bubble:
 
     def __init__(self, destination, mother, time):
@@ -50,9 +51,10 @@ class Bubble:
         self.destination = destination
         self.velocity = mother.velocity
         self.player = mother.player
-        self.population = int(mother.population)
+        self.population = int(mother.population / 2)
         self.radius = population_to_radius(self.population)
         self.mother = mother
+        mother.population -= self.population
 
     def update_radius(self):
         self.radius = population_to_radius(self.population)
@@ -109,6 +111,7 @@ class CellActionTracker:
         self.defended_attacks = [] # (time, bubble)
         self.conquered_list = [] # (time, player)
 
+
 class Cell:
 
     def __init__(self, center, radius, player, population, img_path=img_path):
@@ -127,7 +130,6 @@ class Cell:
         self.action_tracker = CellActionTracker(self)
 
     def attack(self, enemypos):
-        self.population = math.ceil(self.population / 2)
         time = pygame.time.get_ticks()
         b = Bubble(enemypos, self, time)
         self.action_tracker.ordered_attacks += [(time, b)]

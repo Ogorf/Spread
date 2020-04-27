@@ -35,6 +35,7 @@ class Preparation(DefensePerk):
         tooltip = "For every consecutive second a cell has neither defended nor attacked, it gains {}% defense."
         super(Preparation, self).__init__("Preparation", tooltip=tooltip, tier=2, values=values)
 
+   # def defense_modifier(self, info):
 
 
 
