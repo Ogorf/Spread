@@ -40,7 +40,7 @@ class Singleplayer:
         selected = []
 
         while True:
-            #print(clock)                # delete later
+            print(clock)                # delete later
             dt = clock.tick(fps)
 
             for event in pygame.event.get():

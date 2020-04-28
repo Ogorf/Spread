@@ -20,7 +20,7 @@ class Base(AttackPerk):
 
 class Rage(AttackPerk):
     def __init__(self, values):
-        tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}%"
+        tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}"
         super(Rage, self).__init__("Rage", tooltip=tooltip, tier=1, values=values)
 
     # TODO:
@@ -48,7 +48,7 @@ class Rage(AttackPerk):
 
 class Berserker(AttackPerk):
     def __init__(self, values):
-        tooltip = "For every attack a cell has ordered within the last {} seconds, it's attack increases by {}%"
+        tooltip = "For every attack a cell has ordered within the last {} seconds, it's attack increases by {}"
         super(Berserker, self).__init__("Berserker", tooltip=tooltip, tier=1, values=values)
 
     def get_condition_value(self):
