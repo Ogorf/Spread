@@ -8,7 +8,7 @@ window_height = 740
 
 font = pygame.font.SysFont("comincsans", 25)
 clock = pygame.time.Clock()
-fps = 120
+fps = 100
 
 # colours
 maroon = (128, 0, 0)

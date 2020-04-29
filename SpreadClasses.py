@@ -69,10 +69,10 @@ class Bubble:
         direction = (math.cos(radians), math.sin(radians))
         distance = math.hypot(self.center[0] - self.destination[0], self.center[1] - self.destination[1])
         if distance > self.velocity * dt:
-            self.center = (self.center[0]+direction[0]*self.velocity*dt, self.center[1]+direction[1]*self.velocity*dt)
+            self.center = (self.center[0] + direction[0] * self.velocity * dt, self.center[1] + direction[1] * self.velocity * dt)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.colour, (int(self.center[0]), int(self.center[1])), self.radius)
+        pygame.draw.circle(screen, self.colour, (round(self.center[0]), round(self.center[1])), self.radius)
 
     def collide_with_bubble(self, bubble):     # return winner
         if self.player != bubble.player:

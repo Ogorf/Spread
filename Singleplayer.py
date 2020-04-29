@@ -3,6 +3,7 @@ from Maps import map_name
 from Game import *
 from SpreadClasses import Cell
 
+img_path = 'img/background.PNG'
 
 class Singleplayer:
 
@@ -13,9 +14,10 @@ class Singleplayer:
         self.buttons = [
             Button("Exit", (window_width - 60, 0, 60, 30))
         ]
+        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (window_width, window_height))
 
     def draw(self, selected):
-        self.screen.fill(dark_blue)
+        self.screen.blit(self.img, (0, 0))
 
         for obj in selected:
             pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 2)
