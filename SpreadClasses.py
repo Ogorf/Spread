@@ -197,11 +197,14 @@ class Cell:
             return None
 
     def attack(self, enemypos):
-        time = pygame.time.get_ticks()
         b = Bubble(enemypos, self, time)
-        self.action_tracker.ordered_attacks += [(time, b)]
-        self.get_player().action_tracker.ordered_attacks += [(time, b)]
-        return b
+        if b.population != 0:
+            time = pygame.time.get_ticks()
+            self.action_tracker.ordered_attacks += [(time, b)]
+            self.get_player().action_tracker.ordered_attacks += [(time, b)]
+            return b
+        else:
+            return None
 
     def draw(self, window):
         pygame.draw.circle(window, self.get_player().colors[0], self.center, self.radius)
