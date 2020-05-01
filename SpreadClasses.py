@@ -57,17 +57,16 @@ def get_angle(p):
 
 class Bubble:
 
-    def __init__(self, destination, mother, time):
+    def __init__(self, destination, mother, time, population):
         self.creation_time = time
         self.center = mother.center
         self.colour = mother.get_player().colors[2]
         self.destination = destination
         self.velocity = mother.player_stats.velocity
         self.player = mother.get_player()
-        self.population = min(int(mother.population / 2), int(pow(mother.radius, 2) / 100))
+        self.population = population
         self.radius = population_to_radius(self.population)
         self.mother = mother
-        mother.population -= self.population
         self.images = [
             pygame.transform.scale(pygame.image.load(bubble_img_path).convert_alpha(), (self.radius * 4, self.radius * 4)),
         ]
@@ -196,10 +195,15 @@ class Cell:
         else:
             return None
 
+    def get_attack_population(self):
+        return min(int(self.population / 2), int(pow(self.radius, 2) / 100))
+
     def attack(self, enemypos):
-        b = Bubble(enemypos, self, time)
-        if b.population != 0:
+        attack_pop = self.get_attack_population()
+        if attack_pop > 0:
             time = pygame.time.get_ticks()
+            b = Bubble(enemypos, self, time, attack_pop)
+            self.population -= attack_pop
             self.action_tracker.ordered_attacks += [(time, b)]
             self.get_player().action_tracker.ordered_attacks += [(time, b)]
             return b
