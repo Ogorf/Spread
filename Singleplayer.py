@@ -4,9 +4,10 @@ from SpreadClasses import Cell
 
 background_img_path = 'img/background.PNG'
 
+
 class Singleplayer:
 
-    def __init__(self, screen, map_name = "default", player_list = None):
+    def __init__(self, screen, map_name="default", player_list=None):
         if player_list is None:
             player_list = Maps.player_list()
         self.map_name = map_name
@@ -15,10 +16,16 @@ class Singleplayer:
         self.buttons = [
             Button("Exit", (window_width - 60, 0, 60, 30))
         ]
-        self.img = pygame.transform.scale(pygame.image.load(background_img_path).convert_alpha(), (window_width, window_height))
+        self.img = pygame.transform.scale(pygame.image.load(background_img_path).convert_alpha(), (
+            int(math.sqrt(math.pow(window_width, 2) + math.pow(window_height, 2))),
+            int(math.sqrt(math.pow(window_width, 2) + math.pow(window_height, 2)))))
+        self.images = []
+        for angle in range(45):
+            self.images.append(pygame.transform.rotate(self.img, angle))
 
-    def draw(self, selected):
-        self.screen.blit(self.img, (0, 0))
+    def draw(self, selected, angle):
+        self.screen.blit(self.images[angle % 45], (window_width / 2 - int(self.images[angle % 45].get_width()) / 2,
+                                                   window_height / 2 - int(self.images[angle % 45].get_height() / 2)))
 
         for obj in selected:
             pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 2)
@@ -35,12 +42,13 @@ class Singleplayer:
 
     def loop(self):
         self.reset()
-        time_before_loop = pygame.time.get_ticks()
         selected = []
+        angle = 0
 
         while True:
-            print(clock)                # delete later
+            print(clock)  # delete later
             dt = clock.tick(fps)
+            angle += pygame.time.get_ticks() / 300000 + 0.2
 
             for event in pygame.event.get():
 
@@ -66,7 +74,7 @@ class Singleplayer:
                 pos = pygame.mouse.get_pos()
                 for c in self.game.game_state.cells:
                     if math.hypot(c.center[0] - pos[0], c.center[1] - pos[1]) < c.radius:
-                        if c not in selected:           # add (later) and obj.player == p1
+                        if c not in selected:  # add (later) and obj.player == p1
                             selected.append(c)
 
             if not pygame.mouse.get_pressed()[0]:
@@ -74,4 +82,4 @@ class Singleplayer:
 
             self.game.tick(dt)
 
-            self.draw(selected)
+            self.draw(selected, int(angle))

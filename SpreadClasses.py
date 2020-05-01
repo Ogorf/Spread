@@ -58,6 +58,14 @@ class Bubble:
         self.radius = population_to_radius(self.population)
         self.mother = mother
         mother.population -= self.population
+        self.images = [
+            pygame.transform.scale(pygame.image.load(img_path[0]).convert_alpha(), (self.radius * 4, self.radius * 4)),
+        ]
+        angle = math.acos((self.destination[0] - self.center[0] - self.destination[1] + self.center[1]) / (math.sqrt(
+            math.pow(self.destination[1] - self.center[1], 2) + math.pow(self.destination[0] - self.center[0],
+                                                                         2)) * math.sqrt(2))) * 180 / math.pi
+        for i in range(len(self.images)):
+            self.images[i] = pygame.transform.rotate(self.images[i], angle)
 
     def update_radius(self):
         self.radius = population_to_radius(self.population)
@@ -71,6 +79,7 @@ class Bubble:
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.colour, (round(self.center[0]), round(self.center[1])), self.radius)
+        screen.blit(self.images[0], (self.center[0] - self.radius, self.center[1] - self.radius))
 
     def collide_with_bubble(self, bubble):     # return winner
         if self.player != bubble.player:
