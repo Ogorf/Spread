@@ -1,20 +1,21 @@
 from Utils import *
-from Maps import map_name
 from Game import *
 from SpreadClasses import Cell
 
-img_path = 'img/background.PNG'
+background_img_path = 'img/background.PNG'
 
 class Singleplayer:
 
-    def __init__(self, screen):
-        self.cells = []
-        self.game = Game(self.cells)
+    def __init__(self, screen, map_name = "default", player_list = None):
+        if player_list is None:
+            player_list = Maps.player_list()
+        self.map_name = map_name
+        self.game = Game(Map.load(map_name), player_list)
         self.screen = screen
         self.buttons = [
             Button("Exit", (window_width - 60, 0, 60, 30))
         ]
-        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (window_width, window_height))
+        self.img = pygame.transform.scale(pygame.image.load(background_img_path).convert_alpha(), (window_width, window_height))
 
     def draw(self, selected):
         self.screen.blit(self.img, (0, 0))
@@ -30,13 +31,9 @@ class Singleplayer:
         pygame.display.update()
 
     def reset(self):
-        self.cells.clear()
-        for obj in map_name:
-            self.cells.append(Cell((obj[0][0], obj[0][1]), obj[1], obj[2], obj[3]))
-        self.game = Game(self.cells)
+        self.game = Game(Map.load(self.map_name), self.game.players)
 
     def loop(self):
-
         self.reset()
         time_before_loop = pygame.time.get_ticks()
         selected = []
@@ -54,7 +51,7 @@ class Singleplayer:
                 # initiating attack/transfer
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
-                    for c in self.cells:
+                    for c in self.game.game_state.cells:
                         if math.hypot(pos[0] - c.center[0], pos[1] - c.center[1]) < c.radius:
                             self.game.order_attacks(selected, c)
                             break
@@ -67,7 +64,7 @@ class Singleplayer:
             # selecting Cells
             if pygame.mouse.get_pressed():
                 pos = pygame.mouse.get_pos()
-                for c in self.cells:
+                for c in self.game.game_state.cells:
                     if math.hypot(c.center[0] - pos[0], c.center[1] - pos[1]) < c.radius:
                         if c not in selected:           # add (later) and obj.player == p1
                             selected.append(c)
@@ -75,6 +72,6 @@ class Singleplayer:
             if not pygame.mouse.get_pressed()[0]:
                 selected.clear()
 
-            self.game.tick(dt, pygame.time.get_ticks() - time_before_loop)
+            self.game.tick(dt)
 
             self.draw(selected)
