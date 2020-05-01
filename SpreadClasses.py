@@ -4,7 +4,9 @@ import SkillTree
 
 pygame.init()
 
-img_path = 'img/cell1.png'
+cell_img_path = 'img/cell1.png'
+bubble_img_path = 'img/bubble1.png'
+bubble_img_angle = -45
 
 
 class PlayerActionTracker:
@@ -44,28 +46,34 @@ class Player:
     def clear_action_tracker(self):
         self.action_tracker = PlayerActionTracker(self)
 
+def get_angle(p):
+    angle = math.acos(p[0]/math.sqrt(p[0]**2+p[1]**2))*180/math.pi
+    print(p, angle)
+    if p[1] < 0:
+        return 360-angle
+    else:
+        return angle
+
 
 class Bubble:
 
-    def __init__(self, destination, mother, time):
+    def __init__(self, destination, mother, time, population):
         self.creation_time = time
         self.center = mother.center
         self.colour = mother.get_player().colors[2]
         self.destination = destination
         self.velocity = mother.player_stats.velocity
         self.player = mother.get_player()
-        self.population = min(int(mother.population / 2), int(pow(mother.radius, 2) / 100))
+        self.population = population
         self.radius = population_to_radius(self.population)
         self.mother = mother
-        mother.population -= self.population
         self.images = [
-            pygame.transform.scale(pygame.image.load(img_path[0]).convert_alpha(), (self.radius * 4, self.radius * 4)),
+            pygame.transform.scale(pygame.image.load(bubble_img_path).convert_alpha(), (self.radius * 4, self.radius * 4)),
         ]
-        angle = math.acos((self.destination[0] - self.center[0] - self.destination[1] + self.center[1]) / (math.sqrt(
-            math.pow(self.destination[1] - self.center[1], 2) + math.pow(self.destination[0] - self.center[0],
-                                                                         2)) * math.sqrt(2))) * 180 / math.pi
+        angle = get_angle((self.destination[0]-self.center[0], self.destination[1]-self.center[1]))
+        angle -= bubble_img_angle
         for i in range(len(self.images)):
-            self.images[i] = pygame.transform.rotate(self.images[i], angle)
+            self.images[i] = pygame.transform.rotate(self.images[i], -angle)
 
     def update_radius(self):
         self.radius = population_to_radius(self.population)
@@ -143,7 +151,7 @@ class CellPlayer:
 
 class Cell:
 
-    def __init__(self, center, radius, player_id, population, img_path=img_path):
+    def __init__(self, center, radius, player_id, population, img_path=cell_img_path):
         self.center = center
         self.radius = 0
         self.img_path = img_path
@@ -187,12 +195,20 @@ class Cell:
         else:
             return None
 
+    def get_attack_population(self):
+        return min(int(self.population / 2), int(pow(self.radius, 2) / 100))
+
     def attack(self, enemypos):
-        time = pygame.time.get_ticks()
-        b = Bubble(enemypos, self, time)
-        self.action_tracker.ordered_attacks += [(time, b)]
-        self.get_player().action_tracker.ordered_attacks += [(time, b)]
-        return b
+        attack_pop = self.get_attack_population()
+        if attack_pop > 0:
+            time = pygame.time.get_ticks()
+            b = Bubble(enemypos, self, time, attack_pop)
+            self.population -= attack_pop
+            self.action_tracker.ordered_attacks += [(time, b)]
+            self.get_player().action_tracker.ordered_attacks += [(time, b)]
+            return b
+        else:
+            return None
 
     def draw(self, window):
         pygame.draw.circle(window, self.get_player().colors[0], self.center, self.radius)

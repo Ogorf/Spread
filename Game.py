@@ -102,7 +102,9 @@ class Game:
 
     def order_attacks(self, cell_list, cell):
         for c in filter(lambda x: x != cell, cell_list):
-            self.game_state.bubbles += [c.attack(cell.center)]
+            b = c.attack(cell.center)
+            if b is not None:
+                self.game_state.bubbles += [b]
 
     def tick(self, dt):
         self.time += dt
