@@ -1,5 +1,7 @@
 from network import Network
 
 
-n = Network()
+def start_network():
+    n = Network()
+    return n
 

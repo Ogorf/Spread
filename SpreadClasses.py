@@ -18,11 +18,10 @@ class PlayerActionTracker:
 
 class Player:
 
-    def __init__(self, name, cell_colour, pop_colour, core_colour, velocity):
+    def __init__(self, player_id, name, colors, velocity):
+        self.id = player_id
         self.name = name
-        self.cell_colour = cell_colour
-        self.pop_colour = pop_colour
-        self.core_colour = core_colour
+        self.colors = colors
         self.velocity = velocity
         self.action_tracker = PlayerActionTracker(self)
         self.skilltree = SkillTree.empty()
@@ -42,7 +41,6 @@ class Player:
         info = {"cell": cell, "time": t, "player": self}
         return self.skilltree.growth_modifier(info)
 
-
     def clear_action_tracker(self):
         self.action_tracker = PlayerActionTracker(self)
 
@@ -52,10 +50,10 @@ class Bubble:
     def __init__(self, destination, mother, time):
         self.creation_time = time
         self.center = mother.center
-        self.colour = mother.core_colour
+        self.colour = mother.get_player().colors[2]
         self.destination = destination
-        self.velocity = mother.velocity
-        self.player = mother.player
+        self.velocity = mother.player_stats.velocity
+        self.player = mother.get_player()
         self.population = min(int(mother.population / 2), int(pow(mother.radius, 2) / 100))
         self.radius = population_to_radius(self.population)
         self.mother = mother
@@ -91,18 +89,18 @@ class Bubble:
             return None
 
     def collide_with_cell(self, cell):
-        if self.player == cell.player:
+        if self.player.id == cell.player_id:
             cell.population += self.population
         else:
-            perk = cell.player.skilltree.find_perk("Defense", "Membrane")
+            perk = cell.get_player().skilltree.find_perk("Defense", "Membrane")
             if perk is not None and perk.get_value():
                 self.population = max(self.population - perk.get_value(), 0)
-            attack_modifier = self.player.attack_modifier(self)-cell.player.defense_modifier(cell)
+            attack_modifier = self.player.attack_modifier(self)-cell.get_player().defense_modifier(cell)
             result = fight(self.population, cell.population, attack_modifier)
             if result >= 0:
                 cell.population = result
                 cell.defended(self)
-                perk = cell.player.skilltree.find_perk("Defense", "Recover")
+                perk = cell.get_player().skilltree.find_perk("Defense", "Recover")
                 if perk is not None and perk.get_value():
                     cell.population += perk.get_value()
 
@@ -120,45 +118,88 @@ class CellActionTracker:
         self.conquered_list = [] # (time, player)
 
 
+class CellPlayer:
+    def __init__(self, cell, player):
+        self.player = player
+        self.cell = cell
+        self.velocity = player.velocity
+        self.capacity = self.cap()
+
+    def cap(self):
+        perk = self.player.skilltree.find_perk("Population", "Capacity")
+        bonus = 0
+        if perk is not None:
+            bonus = perk.get_value()
+        return int(pow(self.cell.radius, 2) / 100) + bonus
+
 class Cell:
 
-    def __init__(self, center, radius, player, population, img_path=img_path):
+    def __init__(self, center, radius, player_id, population, img_path=img_path):
         self.center = center
-        self.radius = radius
-        self.cell_colour = player.cell_colour
-        self.pop_colour = player.pop_colour
-        self.core_colour = player.core_colour
-        self.velocity = player.velocity
-        self.player = player
-        self.population = self.start_pop(population)
-        self.capacity = self.cap()
-        self.img = pygame.transform.scale(pygame.image.load(img_path).convert_alpha(), (radius * 2, radius * 2))
+        self.radius = 0
+        self.img_path = img_path
         self.time_cycle = 0
-        self.cycle_interval = int(50000/self.radius)
         self.action_tracker = CellActionTracker(self)
+        self.population = population
+        #self.velocity = None
+        #self.player = None
+        #self.capacity = None
+        #self.player = None
+        self.player_id = player_id
+        self.player_stats = None
+        self.img = None
+        self.cycle_interval = None
+        self.update_radius(radius)
+
+    def update_radius(self, radius):
+        self.radius = radius
+        self.cycle_interval = int(50000/self.radius)
+        self.img = pygame.transform.scale(pygame.image.load(self.img_path).convert_alpha(), (radius * 2, radius * 2))
+
+    def code(self):
+        result = ""
+        l = (self.center[0], self.center[1], self.radius, self.player_id, self.population, self.img_path)
+        for i in l:
+            result += str(i)+", "
+        return result
+
+    @staticmethod
+    def decode(s): # inverse function to 'code'
+        l = s.split(", ")[:-1]
+        return Cell((int(l[0]), int(l[1])), int(l[2]), int(l[3]), int(l[4]), l[5])
+
+    def init_player(self, player):
+        self.set_player(player)
+        self.population = self.start_pop(self.population)
+
+    def get_player(self):
+        if self.player_stats != None:
+            return self.player_stats.player
+        else:
+            return None
 
     def attack(self, enemypos):
         time = pygame.time.get_ticks()
         b = Bubble(enemypos, self, time)
         self.action_tracker.ordered_attacks += [(time, b)]
-        self.player.action_tracker.ordered_attacks += [(time, b)]
+        self.get_player().action_tracker.ordered_attacks += [(time, b)]
         return b
 
     def draw(self, window):
-        pygame.draw.circle(window, self.cell_colour, self.center, self.radius)
-        pygame.draw.circle(window, self.pop_colour, self.center,
+        pygame.draw.circle(window, self.get_player().colors[0], self.center, self.radius)
+        pygame.draw.circle(window, self.get_player().colors[1], self.center,
                            min(self.radius, int(math.sqrt(self.population) * 10)))
-        if self.pop_colour != grey:                                         # checks if player is neutral
-            pygame.draw.circle(window, self.core_colour, self.center,
+        if self.get_player().colors[1] != grey:                                         # checks if player is neutral
+            pygame.draw.circle(window, self.get_player().colors[2], self.center,
                                min(self.radius, int(math.sqrt(self.population / 2) * 10)))
         poptext = font.render(str(self.population), 1, (0, 0, 0))
         window.blit(poptext, (self.center[0] - 3, self.center[1] - 5))
         window.blit(self.img, (self.center[0] - self.radius, self.center[1] - self.radius))
 
     def grow(self, dt, current_time):
-        self.time_cycle += dt * (1 + self.player.growth_modifier(self))
-        if self.population > self.capacity:
-            self.population = self.capacity
+        self.time_cycle += dt * (1 + self.get_player().growth_modifier(self))
+        if self.population > self.player_stats.capacity:
+            self.population = self.player_stats.capacity
         else:
             if self.time_cycle > self.cycle_interval:
                 cycles = int(self.time_cycle / self.cycle_interval)
@@ -168,34 +209,35 @@ class Cell:
                     perk = b.player.skilltree.find_perk("Infection", "Base")
                     if perk is not None and perk.get_value(info):
                         return
-                if self.population < self.capacity and self.player.name != "0":
+                if self.population < self.player_stats.capacity and self.player_id != 0:
                     self.population += cycles
 
     def start_pop(self, population):
-        perk = self.player.skilltree.find_perk("Population", "Reinforcements")
+        perk = self.get_player().skilltree.find_perk("Population", "Reinforcements")
         if perk is not None and perk.get_value():
             return population + perk.get_value()
         else:
             return population
 
-
     def defended(self, bubble):
         passed_time = pygame.time.get_ticks()
         self.action_tracker.defended_attacks += [(passed_time, bubble)]
-        self.player.action_tracker.received_attacks += [(passed_time, self, bubble)]
+        self.get_player().action_tracker.received_attacks += [(passed_time, self, bubble)]
+
+    def set_player(self, new_player):
+        self.player_id = new_player.id
+        self.player_stats = CellPlayer(self, new_player)
+        #self.player = new_player
+        #self.velocity = new_player.velocity
+        #self.capacity = self.cap()
 
     def switch_player(self, new_player):
         passed_time = pygame.time.get_ticks()
         self.action_tracker.conquered_list += [(passed_time, new_player)]
         new_player.action_tracker.cell_win_history += [(passed_time, self)]
-        self.player.action_tracker.cell_loose_history += [(passed_time, self)]
-        self.player = new_player
-        self.cell_colour = new_player.cell_colour
-        self.pop_colour = new_player.pop_colour
-        self.core_colour = new_player.core_colour
-        self.velocity = new_player.velocity
-        self.capacity = self.cap()
-        perk = self.player.skilltree.find_perk("Attack", "Slavery")
+        self.get_player().action_tracker.cell_loose_history += [(passed_time, self)]
+        self.set_player(new_player)
+        perk = self.get_player().skilltree.find_perk("Attack", "Slavery")
         if perk is not None and perk.skilled > 0:
             self.population += perk.get_value()
 
@@ -205,14 +247,7 @@ class Cell:
             if math.hypot(self.center[0] - cell.center[0], self.center[1] - cell.center[1]) < cell.radius + self.radius + 5:
                 enough_space = False
         if enough_space:
-            self.radius += 1
-
-    def cap(self):
-        perk = self.player.skilltree.find_perk("Population", "Capacity")
-        bonus = 0
-        if perk is not None and perk.skilled > 0:
-            bonus = perk.get_value()
-        return int(pow(self.radius, 2) / 100) + bonus
+            self.update_radius(self.radius+1)
 
 
 def fight(a, d, am):
