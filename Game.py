@@ -85,7 +85,7 @@ class GameState:
                 bubble.collide_with_cell(bubble.desti_cell)
                 self.bubbles.remove(bubble)
 
-        # bullshit to test things
+        # checks if bubble should bounce and calls bounce function
         for bubble in self.bubbles:
             for cell in filter(lambda x: x != bubble.desti_cell, self.cells):
                 down = (cell.center[0] - bubble.center[0] + bubble.direction[0],
@@ -98,10 +98,7 @@ class GameState:
                         bubble.center[1] - cell.center[1]) ** 2) < bubble.radius + cell.radius and down > up:
                     bubble.bounce(cell)
 
-
 import Maps
-
-
 class Game:
     def __init__(self, m: Map, player_list):
         self.time = pygame.time.get_ticks()

@@ -60,39 +60,51 @@ def get_angle_two_vectors(v, w):
     return w - v
 
 
-class Bubble:
+class MoveObject:
+    def __init__(self, center, direction, velocity):
+        self.center = center
+        self.direction = direction
+        self.velocity = velocity
 
+    def update_center(self, dt):
+        self.center = (self.center[0] + self.direction[0] * self.velocity * dt,
+                       self.center[1] + self.direction[1] * self.velocity * dt)
+
+class Bubble(MoveObject):
     def __init__(self, desti_cell, mother, time, population):
+
         self.creation_time = time
-        self.center = mother.center
+        self.population = population
+        self.radius = population_to_radius(self.population)
         self.colour = mother.get_player().colors[2]
         self.desti_cell = desti_cell
         self.destination = desti_cell.center
-        self.velocity = mother.player_stats.velocity
-        self.direction = self.direction()
         self.player = mother.get_player()
-        self.population = population
-        self.radius = population_to_radius(self.population)
         self.mother = mother
+        self.epsilon = 0.03
         self.images = [
             pygame.transform.scale(pygame.image.load(bubble_img_path).convert_alpha(),
                                    (int(self.radius * 2.2), int(self.radius * 2.2))),
         ]
+        super(Bubble, self).__init__(self.mother.center, (0, 0), self.mother.player_stats.velocity)
 
     def update_radius(self):
         self.radius = population_to_radius(self.population)
         self.images[0] = pygame.transform.scale(pygame.image.load(bubble_img_path).convert_alpha(),
                                                 (int(self.radius * 2.2), int(self.radius * 2.2)))
 
-    def direction(self):
+    def direction_to_desti(self):
         radians = math.atan2(self.destination[1] - self.center[1], self.destination[0] - self.center[0])
         return math.cos(radians), math.sin(radians)
 
+    def update_direction(self):
+        self.direction = ((1 - self.epsilon) * self.direction[0] + self.epsilon * self.direction_to_desti()[0], (1 - self.epsilon) * self.direction[1] + self.epsilon * self.direction_to_desti()[1])
+
+
     def move(self, dt):
-        distance = math.hypot(self.center[0] - self.destination[0], self.center[1] - self.destination[1])
-        if distance > self.velocity * dt:
-            self.center = (self.center[0] + self.direction[0] * self.velocity * dt,
-                           self.center[1] + self.direction[1] * self.velocity * dt)
+        self.update_center(dt)
+        self.update_direction()
+
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.colour, (round(self.center[0]), round(self.center[1])), self.radius)
