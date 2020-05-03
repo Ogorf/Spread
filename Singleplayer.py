@@ -7,7 +7,7 @@ background_img_path = 'img/background.PNG'
 
 class Singleplayer:
 
-    def __init__(self, screen, map_name="default", player_list=None):
+    def __init__(self, screen, map_name="new", player_list=None):
         if player_list is None:
             player_list = Maps.player_list()
         self.map_name = map_name
@@ -20,15 +20,15 @@ class Singleplayer:
             int(math.sqrt(math.pow(window_width, 2) + math.pow(window_height, 2))),
             int(math.sqrt(math.pow(window_width, 2) + math.pow(window_height, 2)))))
         self.images = []
-        for angle in range(45):
-            self.images.append(pygame.transform.rotate(self.img, angle))
+        for angle in range(90):
+            self.images.append(pygame.transform.rotate(self.img, angle / 2))
 
     def draw(self, selected, angle):
-        self.screen.blit(self.images[angle % 45], (window_width / 2 - int(self.images[angle % 45].get_width()) / 2,
-                                                   window_height / 2 - int(self.images[angle % 45].get_height() / 2)))
+        self.screen.blit(self.images[angle % 90], (window_width / 2 - int(self.images[angle % 90].get_width()) / 2,
+                                                   window_height / 2 - int(self.images[angle % 90].get_height() / 2)))
 
         for obj in selected:
-            pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 2)
+            pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 4)
 
         for button in self.buttons:
             button.draw(self.screen)
@@ -44,11 +44,12 @@ class Singleplayer:
         self.reset()
         selected = []
         angle = 0
+        t_before_loop = pygame.time.get_ticks()
 
         while True:
             print(clock)  # delete later
             dt = clock.tick(fps)
-            angle += pygame.time.get_ticks() / 300000 + 0.2
+            angle += (pygame.time.get_ticks() - t_before_loop) / 300000 + 0.15
 
             for event in pygame.event.get():
 

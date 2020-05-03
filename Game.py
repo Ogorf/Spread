@@ -6,6 +6,7 @@ import pygame
 class Map:
     map_dir = "maps/"
     map_ending = ".map"
+
     # uninitialized cells loaded from a file, or mb just pass the file
     def __init__(self, name, cell_list):
         self.name = name
@@ -17,7 +18,7 @@ class Map:
 
     @staticmethod
     def load(map_name):
-        with open(Map.map_dir+map_name+Map.map_ending, "r") as f:
+        with open(Map.map_dir + map_name + Map.map_ending, "r") as f:
             lines = f.readlines()
             name = lines[0]
             cell_list = []
@@ -26,15 +27,15 @@ class Map:
         return Map(name, cell_list)
 
     def save(self):
-        with open(Map.map_dir+self.name+Map.map_ending, 'w') as f:
-            f.write(self.name+"\n")
+        with open(Map.map_dir + self.name + Map.map_ending, 'w') as f:
+            f.write(self.name + "\n")
             for cell in self.cells:
-                f.write(cell.code()+"\n")
+                f.write(cell.code() + "\n")
 
     def init_players(self, player_list):
         for cell in self.cells:
             player = next(filter(lambda p: p.id == cell.player_id, player_list), None)
-            if player == None:
+            if player is None:
                 print("unowned cell!")
                 # mb interrupt here or set default to neutral
             else:
@@ -61,7 +62,7 @@ class GameState:
             bubble.move(dt)
         # check bubble-bubble-collision
         new_bubbles = []
-        while self.bubbles != []:
+        while self.bubbles:
             bubble = self.bubbles.pop()
             fought = False
             for b in new_bubbles:
@@ -78,14 +79,29 @@ class GameState:
                 new_bubbles += [bubble]
         self.bubbles = new_bubbles
 
-        # checks if bubble collides with cell and calls collide function
+        # checks if bubble collides with desti_cell and calls collide function
         for bubble in self.bubbles:
-            for cell in filter(lambda x: x != bubble.mother, self.cells):
-                if SpreadClasses.collides(bubble.center, cell.center, bubble.radius, cell.radius):
-                    bubble.collide_with_cell(cell)
-                    self.bubbles.remove(bubble)
+            if SpreadClasses.collides(bubble.center, bubble.desti_cell.center, bubble.radius, bubble.desti_cell.radius):
+                bubble.collide_with_cell(bubble.desti_cell)
+                self.bubbles.remove(bubble)
+
+        # bullshit to test things
+        for bubble in self.bubbles:
+            for cell in filter(lambda x: x != bubble.desti_cell, self.cells):
+                down = (cell.center[0] - bubble.center[0] + bubble.direction[0],
+                        cell.center[1] - bubble.center[1] + bubble.direction[1])
+                up = (- cell.center[0] + bubble.center[0] + bubble.direction[0],
+                      - cell.center[1] + bubble.center[1] + bubble.direction[1])
+                down = down[0] ** 2 + down[1] ** 2
+                up = up[0] ** 2 + up[1] ** 2
+                if math.sqrt((bubble.center[0] - cell.center[0]) ** 2 + (
+                        bubble.center[1] - cell.center[1]) ** 2) < bubble.radius + cell.radius and down > up:
+                    bubble.bounce(cell)
+
 
 import Maps
+
+
 class Game:
     def __init__(self, m: Map, player_list):
         self.time = pygame.time.get_ticks()
@@ -102,13 +118,13 @@ class Game:
 
     def order_attacks(self, cell_list, cell):
         for c in filter(lambda x: x != cell, cell_list):
-            b = c.attack(cell.center)
+            b = c.attack(cell)
             if b is not None:
                 self.game_state.bubbles += [b]
 
     def tick(self, dt):
         self.time += dt
-        self.game_state.tick(dt, self.time-self.start_time)
+        self.game_state.tick(dt, self.time - self.start_time)
 
     def draw(self, window):
         self.game_state.draw(window)

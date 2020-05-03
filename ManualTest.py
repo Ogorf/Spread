@@ -4,7 +4,7 @@ import PopulationSkill as PS
 import SkillTree
 
 
-perk1 = PS.Reinforcements([[60]])
+perk1 = PS.Reinforcements([[0]])
 perk1.level_up()
 skilltree1 = SkillTree.SkillTree([PS.PopulationSkill([perk1])])
 
