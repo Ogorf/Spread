@@ -175,10 +175,8 @@ class CellPlayer:
         return int(pow(self.cell.radius, 2) / 100) + bonus
 
 
-class Cell:
-
+class Cell(MoveObject):
     def __init__(self, center, radius, player_id, population, img_path=cell_img_path):
-        self.center = center
         self.radius = 0
         self.img_path = img_path
         self.time_cycle = 0
@@ -187,12 +185,12 @@ class Cell:
         # self.velocity = None
         # self.player = None
         # self.capacity = None
-        # self.player = None
         self.player_id = player_id
         self.player_stats = None
         self.img = None
         self.cycle_interval = None
         self.update_radius(radius)
+        super(Cell, self).__init__(center, (0, 0), 0)
 
     def update_radius(self, radius):
         self.radius = radius
