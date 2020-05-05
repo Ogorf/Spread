@@ -1,7 +1,15 @@
-from SpreadClasses import Cell
-from Maps import *
+from SpreadClasses import Cell, Player
+from Utils import *
+from Game import Map
 import math
 
+def default_players():
+    p0 = Player(0, "0", (dim_grey, grey, light_grey), 0.03) # id 0 stands for NeutralPlayer
+    p1 = Player(1, "1", (maroon, brown, peru), 0.12)
+    p2 = Player(2, "2", (olive, yellow_green, yellow), 0.4)
+    p3 = Player(3, "3", (indian_red, light_coral, light_salmon), 0.2)
+    p4 = Player(4, "4", (dark_magenta, medium_violet_red, magenta), 0.1)
+    return [p0, p1, p2, p3, p4]
 
 class AdjustRect:
     def __init__(self, screen, rect, cell):
@@ -9,13 +17,13 @@ class AdjustRect:
         self.screen = screen
         self.cell = cell
         self.textbox = [
-            TextBox("X-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 20, 70, 20), cell.xcord, grey,
+            TextBox("X-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 20, 70, 20), cell.center[0], grey,
                     (255, 255, 255)),
-            TextBox("Y-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 60, 70, 20), cell.ycord, grey,
+            TextBox("Y-Coordinate: ", (rect[0] + rect[3] - 170, rect[1] + 60, 70, 20), cell.center[1], grey,
                     (255, 255, 255)),
             TextBox("Radius: (0 to remove)", (rect[0] + rect[3] - 170, rect[1] + 100, 70, 20), cell.radius, grey,
                     (255, 255, 255)),
-            TextBox("Player: ", (rect[0] + rect[3] - 170, rect[1] + 140, 70, 20), cell.player.name, grey,
+            TextBox("Player: ", (rect[0] + rect[3] - 170, rect[1] + 140, 70, 20), cell.player_id, grey,
                     (255, 255, 255)),
             TextBox("Population: ", (rect[0] + rect[3] - 170, rect[1] + 180, 70, 20), cell.population, grey,
                     (255, 255, 255))
@@ -35,7 +43,9 @@ class AdjustRect:
 
 class MapEditor:
     def __init__(self, screen):
-        self.cells = []
+        self.players = default_players()
+        self.map = Map.new()
+        self.map.cells = []
         self.screen = screen
         self.buttons = [
             Button("Menu", (window_width - 60, 0, 60, 30))
@@ -46,58 +56,52 @@ class MapEditor:
     def blow_cell(self, pos):
         cell_is_near = False
 
-        for cell in self.cells:
-            if math.hypot(pos[0] - cell.xcord, pos[1] - cell.ycord) < cell.radius + 25:
+        for cell in self.map.cells:
+            if math.hypot(pos[0] - cell.center[0], pos[1] - cell.center[1]) < cell.radius + 25:
                 cell_is_near = True
-                if math.hypot(pos[0] - cell.xcord, pos[1] - cell.ycord) < cell.radius:
-                    cell.blow(self.cells)
+                if math.hypot(pos[0] - cell.center[0], pos[1] - cell.center[1]) < cell.radius:
+                    cell.blow(self.map.cells)
         if not cell_is_near:
-            self.cells.append(Cell((pos[0], pos[1]), 20, p0, 0))
+            c = Cell((pos[0], pos[1]), 20, 0, 0)
+            self.map.cells.append(c)
+            self.map.init_players(self.players)
 
     def adjust_cell(self, cell):
-        copy = (cell.xcord, cell.ycord, cell.radius, cell.player, cell.population)
+        copy = (cell.center, cell.radius, cell.player_id, cell.population)
         for box in self.adjustrect[0].textbox:
             if box.text:
                 if box.name == "X-Coordinate: " and int(box.text) < window_width:
-                    cell.xcord = int(box.text)
+                    cell.center = (int(box.text), cell.center[1])
                 elif box.name == "Y-Coordinate: " and int(box.text) < window_height:
-                    cell.ycord = int(box.text)
+                    cell.center = (cell.center[0], int(box.text))
                 elif box.name == "Radius: (0 to remove)":
                     if int(box.text) in range(20, window_width + 1):
-                        cell.radius = int(box.text)
+                        cell.update_radius(int(box.text))
+                        #cell.radius = int(box.text)
                     elif int(box.text) == 0:
-                        self.cells.remove(cell)
+                        self.map.cells.remove(cell)
                 elif box.name == "Player: " and int(box.text) in range(0, 5):
-                    if int(box.text) == 0:
-                        cell.switch_player(p0)
-                    elif int(box.text) == 1:
-                        cell.switch_player(p1)
-                    elif int(box.text) == 2:
-                        cell.switch_player(p2)
-                    elif int(box.text) == 3:
-                        cell.switch_player(p3)
-                    elif int(box.text) == 4:
-                        cell.switch_player(p4)
+                    cell.player_id = int(box.text)
+                    self.map.init_players(self.players)
                 elif box.name == "Population: ":
                     if int(box.text) < math.pow(cell.radius, 2) / 100:
                         cell.population = int(box.text)
                     else:
                         cell.population = int(math.pow(cell.radius, 2) / 100)
         enough_space = True
-        for c in filter(lambda x: x != cell, self.cells):
-            if math.hypot(cell.xcord - c.xcord, cell.ycord - c.ycord) < c.radius + cell.radius + 4:
+        for c in filter(lambda x: x != cell, self.map.cells):
+            if math.hypot(cell.center[0] - c.center[0], cell.center[1] - c.center[1]) < c.radius + cell.radius + 4:
                 enough_space = False
         if not enough_space:
-            cell.xcord = copy[0]
-            cell.ycord = copy[1]
-            cell.radius = copy[2]
-            cell.switch_player(copy[3])
-            cell.population = copy[4]
+            cell.center = copy[0]
+            cell.radius = copy[1]
+            cell.switch_player(copy[2])
+            cell.population = copy[3]
             self.messagebox.append(MessageBox(self.screen, "Cell is to close to another cell!", font))
 
     def draw(self):
         self.screen.fill(dark_blue)
-        for cell in self.cells:
+        for cell in self.map.cells:
             cell.draw(self.screen)
         for obj in self.adjustrect:
             obj.draw()
@@ -108,17 +112,7 @@ class MapEditor:
         pygame.display.update()
 
     def save(self):
-        maps = open("Maps.py", "a")
-        maps.write("map_name = [\n")
-        if self.cells:
-            for c in filter(lambda x: x != self.cells[0], self.cells):
-                maps.writelines(
-                    ["((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ",
-                     "p" + str(c.player.name), ", ", str(c.population), "),\n"])
-            c = self.cells[0]
-            maps.writelines(["((", str(c.xcord), ", ", str(c.ycord), "), ", str(c.radius), ", ",
-                             "p" + str(c.player.name), ", ", str(c.population), ")]\n"])
-
+        self.map.save()
         self.buttons.clear()
         self.buttons.append(Button("Menu", (window_width - 60, 0, 60, 30)))
 
@@ -136,8 +130,8 @@ class MapEditor:
                 # select a cell
                 if event.type == pygame.MOUSEBUTTONUP:
                     if not self.adjustrect and not self.messagebox:
-                        for cell in self.cells:
-                            if math.hypot(event.pos[0] - cell.xcord, event.pos[1] - cell.ycord) < cell.radius:
+                        for cell in self.map.cells:
+                            if math.hypot(event.pos[0] - cell.center[0], event.pos[1] - cell.center[1]) < cell.radius:
                                 self.adjustrect.append(AdjustRect(self.screen, (475, 200, 350, 400), cell))
 
                     # adjusts cell once AdjustRect is closed

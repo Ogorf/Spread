@@ -2,6 +2,7 @@ from MainMenu import *
 from Singleplayer import *
 from MapEditor import *
 from SkillTree import *
+from MultiplayerClient import *
 
 # name window
 pygame.display.set_caption("Spread")

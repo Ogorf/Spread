@@ -1,4 +1,3 @@
-from AttackSkill import *
 from Utils import *
 
 pygame.init()
@@ -43,7 +42,7 @@ class Skill:
         w2, h2 = text.get_size()
         window.blit(text, ((w - w2) / 2, h * Skill._header_spacing))
         pygame.draw.line(window, (0, 0, 0), (0, h2 + 2 * h * Skill._header_spacing),
-                         (w, h2 + 2 * h * Skill._header_spacing), width=int(min(w, h) * Skill._line_width))
+                         (w, h2 + 2 * h * Skill._header_spacing), int(min(w, h) * Skill._line_width))
 
         max_tier = len(self.tier_perk_dict)
         height_per_tier = (h - h2 - 2 * h * Skill._header_spacing) / max_tier
@@ -55,22 +54,42 @@ class Skill:
         perk_font = pygame.font.SysFont("comincsans", int(min(perk_width, height_per_tier) / 5))
         # draw perks
         for (perk_tier, perk_list) in self.tier_perk_dict.items():
-            y = h2 + 2 * h * Skill._header_spacing + height_per_tier * (perk_tier + 0.5)
+            y = h2 + 2 * h * Skill._header_spacing + height_per_tier * (max_tier - perk_tier - 0.5)
             x = w / len(perk_list) / 2
             for perk in perk_list:
                 perk.draw(window, (x, y), (w / len(perk_list), height_per_tier), perk_font)
                 x += w / len(perk_list)
 
     def attack_modifier(self, info):
-        return 0
+        result = 0
+        for perk in self.perks():
+            result += perk.attack_modifier(info)
+        return result
+
+    def defense_modifier(self, info):
+        result = 0
+        for perk in self.perks():
+            result += perk.defense_modifier(info)
+        return result
+
+    def growth_modifier(self, info):
+        result = 0
+        for perk in self.perks():
+            result += perk.growth_modifier(info)
+        return result
+
 
 
 class Perk:
     def __init__(self, name: str, **kwargs):  # tooltip: str, tier: int = 0, levels: int = 1, skilled: int = 0):
         self.name = name
         self.tier = kwargs.get("tier", 0)
-        self.tooltip = kwargs.pop("tooltip", "")
-        self.levels = kwargs.pop("levels", 1)
+        self.values = kwargs.pop("values", [[]])
+        l = list(zip(*self.values))
+        l = map(lambda x: "/".join(list(map(lambda y: str(y), x))), l)
+        l = list(l)
+        self.tooltip = kwargs.pop("tooltip", "").format(*l)  # *list(zip(self.values)))
+        self.levels = len(self.values)
         self.skilled = kwargs.pop("skilled", 0)
         self.__dict__.update(**kwargs)
         self.bbox = None
@@ -81,7 +100,7 @@ class Perk:
         return self.skilled > 0
 
     def draw_tooltip(self, window, x, y):
-        if self.rendered_tooltip == None:
+        if self.rendered_tooltip is None:
             self.rendered_tooltip = SkillTree._tooltip_font.render(self.tooltip, 1, (50, 50, 50))
         w, h = self.rendered_tooltip.get_size()
         window.blit(self.rendered_tooltip, (x - w, y - h))
@@ -96,17 +115,28 @@ class Perk:
         l = self.skilled / self.levels
         bg_color = (255 - l * (255 - dark_blue[0]), 255 - l * (255 - dark_blue[1]), 255 - l * (255 - dark_blue[2]))
         pygame.draw.rect(window, bg_color, self.bbox)
-        if self.rendered_text == None:
-            text = font.render(self.name + " (" + str(self.skilled) + "/" + str(self.levels) + ")", 1, (0, 0, 0))
-        a, b = text.get_size()
-        window.blit(text, (center[0] - a / 2, center[1] - b / 2))
+        if self.rendered_text is None:
+            self.rendered_text = font.render(self.name + " (" + str(self.skilled) + "/" + str(self.levels) + ")", 1,
+                                             (0, 0, 0))
+        a, b = self.rendered_text.get_size()
+        window.blit(self.rendered_text, (center[0] - a / 2, center[1] - b / 2))
         pygame.draw.rect(window, (0, 0, 0), self.bbox, 3)
 
     def attack_modifier(self, info):
         return 0
 
+    def defense_modifier(self, info):
+        return 0
 
-import attack_skill
+    def growth_modifier(self, info):
+        return 0
+
+
+
+import AttackSkill
+import InfectionSkill
+import DefenseSkill
+import PopulationSkill
 
 
 class SkillTree:
@@ -125,7 +155,7 @@ class SkillTree:
 
     def get_perk(self, x, y):
         for perk in self.selected_skill().perks():
-            if perk.bbox != None:
+            if perk.bbox is not None:
                 if 0 <= x - perk.bbox[0] <= perk.bbox[2] and 0 <= y - perk.bbox[1] <= perk.bbox[3]:
                     return perk
         return None
@@ -141,13 +171,25 @@ class SkillTree:
 
     def draw_tooltip(self, window, x, y):
         perk = self.get_perk(x, y)
-        if perk != None:
+        if perk is not None:
             perk.draw_tooltip(window, x, y)
 
     def attack_modifier(self, info):
         result = 0
         for skill in self.skills:
             result += skill.attack_modifier(info)
+        return result
+
+    def defense_modifier(self, info):
+        result = 0
+        for skill in self.skills:
+            result += skill.defense_modifier(info)
+        return result
+
+    def growth_modifier(self, info):
+        result = 0
+        for skill in self.skills:
+            result += skill.growth_modifier(info)
         return result
 
     def find_perk(self, skill_name, perk_name):
@@ -157,20 +199,13 @@ class SkillTree:
         return None
 
 
-def empty_skilltree():
-    attack = attack_skill.AttackSkill([Base([0.1, 0.2, 0.3]), Rage((3, 0.2)), Berserker((2, 0.05)), Slavery(10)])
-    # defense1 = Perk("Base", "Increases defense by 10/20/30%", 0, 3)
-    # defense2 = Perk("Loots of Victory", "For every successful defense, the cell gains +5 pop", 1, 1)
-    # defense3 = Perk("Preparation", "For every consecutive second a cell has neither defended nor attacked, it gains +1% defense", 1, 1)
-    # defense4 = Perk("Membran", "The first 10 attackers of every attacking enemy bubble die to the membran before doing damage", 2, 1)
-    # defense = Skill("Defense", [defense1, defense2, defense3, defense4])
-    skilltree = SkillTree([attack])  # , defense])
+def empty():
+    skilltree = SkillTree([AttackSkill.empty(), DefenseSkill.empty(), InfectionSkill.empty(), PopulationSkill.empty(), ])
     return skilltree
 
 
 def skilltree_loop(window):
-
-    skilltree = empty_skilltree()
+    skilltree = empty()
 
     while True:
         # clock.tick(120)
@@ -186,7 +221,7 @@ def skilltree_loop(window):
         for event in events:
             # close window
             if event.type == pygame.QUIT:
-                return "MainMenu"
+                return "Quit"
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     skilltree.navigate(-1)
