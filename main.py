@@ -6,6 +6,7 @@ import skilltree
 import multiplayer_client
 import singleplayer_menu
 import profile
+from utils import *
 
 # name window
 pygame.display.set_caption("Spread")
