@@ -6,16 +6,16 @@ class MainMenu:
         self.running = True
         self.screen = screen
         self.buttons = [
-            Button("Singleplayer", (550, 100, 200, 50)),
-            Button("Multiplayer", (550, 200, 200, 50)),
-            Button("Map Editor", (550, 300, 200, 50)),
-            Button("Laboratory", (550, 400, 200, 50)),
-            Button("Profile", (550, 500, 200, 50)),
-            Button("Quit", (550, 600, 200, 50))
+            Button("Singleplayer", (window_width/2 - 100, 100, 200, 50)),
+            Button("Multiplayer", (window_width/2 - 100, 200, 200, 50)),
+            Button("Map Editor", (window_width/2 - 100, 300, 200, 50)),
+            Button("Laboratory", (window_width/2 - 100, 400, 200, 50)),
+            Button("Options", (window_width/2 - 100, 500, 200, 50)),
+            Button("Quit", (window_width/2 - 100, 600, 200, 50))
             ]
 
     def draw(self):
-        self.screen.fill(dark_blue)
+        self.screen.fill(dark_grey_bt)
         for button in self.buttons:
             button.draw(self.screen)
         pygame.display.update()

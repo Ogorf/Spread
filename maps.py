@@ -12,7 +12,7 @@ p2 = ai.Basic(2, "2", (maroon, brown, peru), 0.3)
 p3 = ai.Basic(3, "3", (indian_red, light_coral, light_salmon), 0.3)
 p4 = ai.Basic(4, "4", (dark_magenta, medium_violet_red, magenta), 0.1)
 
-#p1.skilltree = SkillTree.SkillTree.load("firstphage")
+p1.skilltree = skilltree.SkillTree.load("firstphage")
 
 def player_list():
     return [p0, p1, p2, p3, p4]

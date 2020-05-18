@@ -47,7 +47,9 @@ saddle_brown = (139, 69, 19)
 chocolate = (210, 105, 30)
 peru = (205, 133, 63)
 
-dark_blue = (11, 11, 66)  # used for background
+dark_blue = (11, 11, 66)  # used for UI?
+dark_grey_bt = (35, 35, 65)    # used for UI
+dim_grey_bt = (80, 80, 120)     # used for UI
 dim_grey = (105, 105, 105)  # used for neutrals
 grey = (128, 128, 128)  # used for neutrals
 light_grey = (211, 211, 211)  # used for neutrals

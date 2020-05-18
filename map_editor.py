@@ -73,7 +73,7 @@ class MapEditor:
             self.map.init_players(self.players)
 
     def adjust_cell(self, cell):
-        copy = (cell.center, cell.radius, cell.player_id, cell.population)
+        copy = (cell.center, cell.radius, cell.population)
         for box in self.adjustrect[0].textbox:
             if box.text:
                 if box.name == "X-Coordinate: " and int(box.text) < window_width:
@@ -99,13 +99,12 @@ class MapEditor:
                 enough_space = False
         if not enough_space:
             cell.center = copy[0]
-            cell.radius = copy[1]
-            cell.switch_player(copy[2])
-            cell.population = copy[3]
+            cell.population = copy[2]
+            cell.update_radius(copy[1])
             self.messagebox.append(MessageBox(self.screen, "Cell is to close to another cell!", font))
 
     def draw(self):
-        self.screen.fill(dark_blue)
+        self.screen.fill(dark_grey_bt)
         for cell in self.map.cells:
             cell.draw(self.screen)
         for box in self.box:
@@ -168,6 +167,7 @@ class MapEditor:
         clock = pygame.time.Clock()
         while True:
             print(clock)  # delete later
+            clock.tick(fps)
 
             for event in pygame.event.get():
 

@@ -14,7 +14,7 @@ class SingleplayerMenu:
         self.box = []
 
     def draw(self):
-        self.screen.fill(dark_blue)
+        self.screen.fill(dark_grey_bt)
         for box in self.box:
             box.draw(self.screen)
         for button in self.buttons:
@@ -55,6 +55,7 @@ class SingleplayerMenu:
         clock = pygame.time.Clock()
         while True:
             print(clock)  # delete later
+            clock.tick(fps)
             for event in pygame.event.get():
 
                 # closes window
