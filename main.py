@@ -13,7 +13,7 @@ class Spread:
     pygame.display.set_caption("Spread")
 
     def __init__(self):
-        self.window = pygame.display.set_mode((window_width, window_height))
+        self.window = pygame.display.set_mode((window_width, window_height), pygame.FULLSCREEN)
 
     def loop(self):
         goto = "MainMenu"
