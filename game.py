@@ -42,6 +42,13 @@ class Map:
             else:
                 cell.init_player(player)
 
+    def get_player_count(self):
+        players = []
+        for cell in self.cells:
+            if cell.player_id not in players:
+                players += [cell.player_id]
+        return len(players) - 1
+
 
 class GameState:
     def __init__(self, cells, bubbles):

@@ -56,7 +56,7 @@ light_grey = (211, 211, 211)  # used for neutrals
 
 
 class Box:
-    def __init__(self, rect, colour=gold, edge_colour=dark_golden_rod):
+    def __init__(self, rect, colour=dark_blue, edge_colour=dark_golden_rod):
         self.rect = rect
         self.colour = colour
         self.edge_colour = edge_colour
@@ -67,17 +67,25 @@ class Box:
 
 
 class Button:
-    def __init__(self, name, rect,  colour=gold, edge_colour=dark_golden_rod):
+    def __init__(self, name, rect,  colour=dim_grey, edge_colour=light_grey, active_colour=light_cyan):
         self.name = name
         self.rect = rect
         self.colour = colour
         self.edge_colour = edge_colour
+        self.active_colour = active_colour
+        self.active = False
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.edge_colour, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
-        pygame.draw.rect(screen, self.colour, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
-        text = font.render(self.name, 1, (0, 0, 0))
-        screen.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
+        if not self.active:
+            pygame.draw.rect(screen, self.edge_colour, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
+            pygame.draw.rect(screen, self.colour, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
+            text = font.render(self.name, 1, (255, 255, 255))
+            screen.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
+        else:
+            pygame.draw.rect(screen, self.edge_colour, (self.rect[0], self.rect[1], self.rect[2], self.rect[3]), 5)
+            pygame.draw.rect(screen, self.active_colour, (self.rect[0] + 5, self.rect[1] + 5, self.rect[2] - 10, self.rect[3] - 10))
+            text = font.render(self.name, 1, (0, 0, 0))
+            screen.blit(text, (self.rect[0] + 8, self.rect[1] + self.rect[3] / 2 - 8))
 
 
 class TextBox:
@@ -146,3 +154,16 @@ class MessageBox:
         pygame.draw.rect(screen, golden_rod, self.ok)
         ok = font.render("OK", 1, (0, 0, 0))
         screen.blit(ok, (self.ok[0] + 10, self.ok[1] + 7))
+
+
+class Writing:
+    def __init__(self, text, xcord, ycord, size=25, colour=(0, 0, 0), wfont="comicsans",):
+        self.text = text
+        self.xcord = xcord
+        self.ycord = ycord
+        self.font = pygame.font.SysFont(wfont, size)
+        self.colour = colour
+
+    def draw(self, screen):
+        text = font.render(self.text, 1, self.colour)
+        screen.blit(text, (self.xcord, self.ycord))

@@ -146,7 +146,7 @@ class MapEditor:
             self.reset_buttons()
             self.buttons.append(Button("save", (window_width/2 - 32, window_height/2 + 30, 64, 30)))
             self.buttons.append(Button("cancel", (window_width / 2 - 32, window_height / 2 + 70, 64, 30)))
-            self.textbox.append(TextBox("save as:", (window_width/2 - 50, window_height/2, 210, 20), "new", True, 100))
+            self.textbox.append(TextBox("save as:", (window_width/2 - 50, window_height/2, 210, 20), self.map.name[:-1], True, 100))
             self.box.append(Box((window_width/2 - 180, window_height/2 - 10, 360, 120)))
         elif name == "cancel" or name == "ok":
             self.reset_buttons()
@@ -228,9 +228,29 @@ class MapEditor:
                             if box.active:
                                 box.add_text(event.key)
 
+            # activate buttons
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
+
+            for button in self.map_buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
+
+            if self.adjustrect:
+                if pygame.Rect(self.adjustrect[0].button[0].rect).collidepoint(x, y):
+                    self.adjustrect[0].button[0].active = True
+                else:
+                    self.adjustrect[0].button[0].active = False
+
+
             # blows cell
             if pygame.key.get_pressed()[pygame.K_SPACE]:
-                pos = pygame.mouse.get_pos()
-                self.blow_cell(pos)
+                self.blow_cell((x, y))
 
             self.draw()

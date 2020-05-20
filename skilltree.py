@@ -309,7 +309,7 @@ class SkilltreeMenu:
         elif name == "Load phage":
             self.reset_buttons()
             height = 0
-            entries = Path('profiles/phages/')
+            entries = Path('profiles/default/phages/')
             for entry in entries.iterdir():
                 self.virus_buttons.append(
                     Button(entry.name[:-4], (window_width / 2 - 100, window_height / 2 - 90 + height, 200, 30)))
@@ -364,5 +364,13 @@ class SkilltreeMenu:
                     for box in self.textbox:
                         if box.active:
                             box.add_text(event.key)
+
+            # activate buttons
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
 
             self.draw()

@@ -5,8 +5,8 @@ background_img_path = 'img/background.PNG'
 
 
 class Singleplayer:
-    def __init__(self, screen, map_name="decent", player_list=None):
-        self.player_list = maps.player_list()
+    def __init__(self, screen, map_name="decent", player_list=maps.player_list()):
+        self.player_list = player_list
         self.map_name = map_name
         self.game = Game(Map.load(map_name), self.player_list)
         self.screen = screen
@@ -45,10 +45,10 @@ class Singleplayer:
         clock = pygame.time.Clock()
 
         while True:
-            print(clock)  # delete later
+            # print(clock)  # delete later
             dt = clock.tick(fps)
             time = pygame.time.get_ticks() - t_before_loop
-            angle += time / 300000 + 0.15
+            angle += time / 300000 + 0.2
 
             for event in pygame.event.get():
                 # close window
@@ -66,7 +66,7 @@ class Singleplayer:
                     for button in self.buttons:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             if button.name == "Exit":
-                                return "MainMenu"
+                                return
 
             # initiating AI orders
             for player in filter(lambda x: x.isAI, self.player_list):
@@ -84,6 +84,14 @@ class Singleplayer:
 
             if not pygame.mouse.get_pressed()[0]:
                 selected.clear()
+
+            # activate buttons
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
 
             self.game.tick(dt)
 

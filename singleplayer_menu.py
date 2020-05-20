@@ -1,5 +1,9 @@
 from utils import *
 from pathlib import Path
+import game
+import spread_classes
+import ai
+import singleplayer
 
 
 class SingleplayerMenu:
@@ -11,7 +15,9 @@ class SingleplayerMenu:
             Button("Exit", (window_width - 60, 0, 60, 30))
         ]
         self.map_buttons = []
+        self.player_buttons = []
         self.box = []
+        self.writings = []
 
     def draw(self):
         self.screen.fill(dark_grey_bt)
@@ -21,12 +27,18 @@ class SingleplayerMenu:
             button.draw(self.screen)
         for button in self.map_buttons:
             button.draw(self.screen)
+        for button in self.player_buttons:
+            button.draw(self.screen)
+        for writing in self.writings:
+            writing.draw(self.screen)
         pygame.display.update()
 
     def reset_buttons(self):
         self.box.clear()
         self.buttons.clear()
         self.map_buttons.clear()
+        self.player_buttons.clear()
+        self.writings.clear()
         self.buttons.append(Button("Exit", (window_width - 60, 0, 60, 30)))
         self.buttons.append(Button("Custom Game", (10, window_height - 50, 160, 40)))
 
@@ -37,24 +49,55 @@ class SingleplayerMenu:
             entries = Path('maps/')
             for entry in entries.iterdir():
                 self.map_buttons.append(
-                    Button(entry.name[:-4], (window_width / 2 - 100, window_height / 2 - 120 + height, 200, 30)))
+                    Button(entry.name[:-4], (20, window_height - 145 - height, 200, 30)))
                 height += 40
-            self.buttons.append(Button("load", (window_width / 2 - 35, window_height / 2 - 120 + height, 70, 30)))
-            self.buttons.append(Button("cancel", (window_width / 2 - 35, window_height / 2 - 90 + height, 70, 30)))
-            self.box.append(Box((window_width / 2 - 110, window_height / 2 - 140, 220, height + 100), dim_grey))
+            self.buttons.append(Button("cancel", (50, window_height - 100, 100, 30)))
+            self.box.append(Box((10, window_height - height - 120, 240, max(height + 110, 200))))
         elif name == "cancel":
             self.reset_buttons()
+            self.map_name = ""
+        elif name == "Play" and self.map_name != "":
+            singleplayer.Singleplayer(self.screen, self.map_name, self.player_list()).loop()
 
     def map_button_effect(self, button):
-        for map_button in self.map_buttons:
-            map_button.colour = gold
-        button.colour = yellow
+        for b in self.map_buttons:
+            b.active = False
+        button.active = True
         self.map_name = button.name
+        self.box[0] = Box((10, self.box[0].rect[1], 720, self.box[0].rect[3]))
+        self.writings += [Writing("Players:", 280, self.box[0].rect[1] + 5, 30, (255, 255, 255))]
+        height = 0
+        self.player_buttons.clear()
+        for i in range(game.Map.load(self.map_name).get_player_count()):
+            self.player_buttons.append(Button("AI", (280, self.box[0].rect[1] + 35 + height, 100, 30)))
+            height += 40
+        if self.player_buttons:
+            self.player_buttons[0].name = "Player"
+        self.buttons.append(Button("Play", (400, window_height - 100, 70, 30)))
+
+    @staticmethod
+    def player_button_effect(button):
+        if button.name == "Player":
+            button.name = "AI"
+        elif button.name == "AI":
+            button.name = "Player"
+
+    def player_list(self):
+        player_list = [spread_classes.Player(0, "0", (dim_grey, grey, light_grey), 0.03)]
+        i = 1
+        colours = [(olive, yellow_green, yellow), (maroon, brown, peru), (indian_red, light_coral, light_salmon), (dark_magenta, medium_violet_red, magenta)]
+        for button in self.player_buttons:
+            if button.name == "Player":
+                player_list += [spread_classes.Player(i, str(i), colours[i-1], 0.5)]
+            elif button.name == "AI":
+                player_list += [ai.Basic(i, str(i), colours[i-1], 0.5)]
+            i += 1
+        return player_list
 
     def loop(self):
         clock = pygame.time.Clock()
         while True:
-            print(clock)  # delete later
+            # print(clock)  # delete later
             clock.tick(fps)
             for event in pygame.event.get():
 
@@ -68,12 +111,34 @@ class SingleplayerMenu:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             if button.name == "Exit":
                                 return "MainMenu"
-                            elif button.name == "load" and self.map_name != "":
-                                return "SP" + self.map_name
                             else:
                                 self.button_effect(button.name)
 
                     for button in self.map_buttons:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             self.map_button_effect(button)
+                    for button in self.player_buttons:
+                        if pygame.Rect(button.rect).collidepoint(event.pos):
+                            self.player_button_effect(button)
+
+
+            # activate buttons
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
+
+            for button in filter(lambda x: x.name != self.map_name, self.map_buttons):
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
+
+            for button in self.player_buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
             self.draw()

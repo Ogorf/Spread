@@ -35,6 +35,14 @@ class MainMenu:
                     for button in self.buttons:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             return button.name
+
+            # activate buttons
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if pygame.Rect(button.rect).collidepoint(x, y):
+                    button.active = True
+                else:
+                    button.active = False
             self.draw()
 
 
