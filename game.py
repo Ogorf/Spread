@@ -35,19 +35,18 @@ class Map:
 
     def init_players(self, player_list):
         for cell in self.cells:
-            player = next(filter(lambda p: p.id == cell.player_id, player_list), None)
-            if player is None:
-                print("unowned cell!")
-                # mb interrupt here or set default to neutral
-            else:
-                cell.init_player(player)
+            for player in player_list:
+                if player.id == cell.player_id:
+                    cell.init_player(player)
+                    break
 
-    def get_player_count(self):
+    def get_player_slots(self):
         players = []
         for cell in self.cells:
             if cell.player_id not in players:
                 players += [cell.player_id]
-        return len(players) - 1
+        players.sort()
+        return players
 
 
 class GameState:

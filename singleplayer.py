@@ -66,7 +66,8 @@ class Singleplayer:
                     for button in self.buttons:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             if button.name == "Exit":
-                                return
+                                return "Singleplayer"
+
 
             # initiating AI orders
             for player in filter(lambda x: x.isAI, self.player_list):

@@ -46,6 +46,10 @@ class Player:
     def clear_action_tracker(self):
         self.action_tracker = PlayerActionTracker(self)
 
+    @classmethod
+    def neutral(cls):
+        return cls(0, "neutral", (dim_grey, grey, light_grey), 0.03)
+
 
 def get_angle(p):
     angle = math.acos(p[0] / math.sqrt(p[0] ** 2 + p[1] ** 2))
@@ -184,7 +188,6 @@ class CellPlayer:
         bonus = 0
         if perk is not None:
             bonus = perk.get_value()
-            print(bonus)
         return int(pow(self.cell.radius, 2) / 100) + bonus
 
 
