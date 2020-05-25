@@ -5,7 +5,7 @@ background_img_path = 'img/background.PNG'
 
 
 class Singleplayer:
-    def __init__(self, screen, map_name="decent", player_list=maps.player_list()):
+    def __init__(self, screen, map_name, player_list):
         self.player_list = player_list
         self.map_name = map_name
         self.game = Game(Map.load(map_name), self.player_list)
@@ -23,12 +23,10 @@ class Singleplayer:
     def draw(self, selected, angle):
         self.screen.blit(self.images[angle % 90], (window_width / 2 - int(self.images[angle % 90].get_width()) / 2,
                                                    window_height / 2 - int(self.images[angle % 90].get_height() / 2)))
-
-        for obj in selected:
-            pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 4)
-
         for button in self.buttons:
             button.draw(self.screen)
+        for obj in selected:
+            pygame.draw.circle(self.screen, (255, 255, 255), obj.center, obj.radius + 6)
 
         self.game.draw(self.screen)
 
@@ -45,7 +43,7 @@ class Singleplayer:
         clock = pygame.time.Clock()
 
         while True:
-            # print(clock)  # delete later
+            print(clock)  # delete later
             dt = clock.tick(fps)
             time = pygame.time.get_ticks() - t_before_loop
             angle += time / 300000 + 0.2
@@ -67,7 +65,6 @@ class Singleplayer:
                         if pygame.Rect(button.rect).collidepoint(event.pos):
                             if button.name == "Exit":
                                 return "Singleplayer"
-
 
             # initiating AI orders
             for player in filter(lambda x: x.isAI, self.player_list):

@@ -13,7 +13,7 @@ class Map:
         self.cells = cell_list
 
     @classmethod
-    def new(cls, map_name="new"):
+    def new(cls, map_name="new\n"):
         return cls(map_name, [])
 
     @classmethod

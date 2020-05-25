@@ -19,7 +19,7 @@ class PlayerActionTracker:
 
 class Player:
 
-    def __init__(self, player_id, name, colors, velocity=0.5):
+    def __init__(self, player_id, name, colors, velocity=0.2):
         self.id = player_id
         self.name = name
         self.colors = colors

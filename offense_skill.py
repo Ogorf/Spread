@@ -1,12 +1,12 @@
 import skilltree
 
 
-class AttackPerk(skilltree.Perk):
+class OffensePerk(skilltree.Perk):
     def attack_modifier(self, info):
         return 0
 
 
-class Base(AttackPerk):
+class Base(OffensePerk):
     def __init__(self, values):
         tooltip = "Boost attack by {}%"
         super(Base, self).__init__("Base", tooltip=tooltip, tier=0, values=values)
@@ -18,7 +18,7 @@ class Base(AttackPerk):
             return 0
 
 
-class Rage(AttackPerk):
+class Rage(OffensePerk):
     def __init__(self, values):
         tooltip = "Whenever a friendly cell is lost, attack is shortly ({} seconds) increased by {}"
         super(Rage, self).__init__("Rage", tooltip=tooltip, tier=1, values=values)
@@ -46,7 +46,7 @@ class Rage(AttackPerk):
             return 0
 
 
-class Berserker(AttackPerk):
+class Berserker(OffensePerk):
     def __init__(self, values):
         tooltip = "For every attack a cell has ordered within the last {} seconds, it's attack increases by {}"
         super(Berserker, self).__init__("Berserker", tooltip=tooltip, tier=1, values=values)
@@ -69,7 +69,7 @@ class Berserker(AttackPerk):
         return self.get_value()*n
 
 
-class Slavery(AttackPerk):
+class Slavery(OffensePerk):
     def __init__(self, values):
         # tooltip = "Every newly conquered cell gains " + str(value) + " pop"
         tooltip = "Every newly conquered cell gains {} population"
@@ -82,9 +82,9 @@ class Slavery(AttackPerk):
             return 0
 
 
-class AttackSkill(skilltree.Skill):
+class OffenseSkill(skilltree.Skill):
     def __init__(self, l):
-        super(AttackSkill, self).__init__("Attack", l)
+        super(OffenseSkill, self).__init__("Offense", l)
 
     def attack_modifier(self, info):
         result = 0
@@ -94,4 +94,4 @@ class AttackSkill(skilltree.Skill):
 
 
 def empty():
-    return AttackSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(5, 0.05)]), Slavery([(10,)])])
+    return OffenseSkill([Base([(0.1,), (0.2,), (0.3,)]), Rage([(3, 0.2)]), Berserker([(5, 0.05)]), Slavery([(10,)])])

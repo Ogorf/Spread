@@ -1,5 +1,4 @@
 import main_menu
-import singleplayer
 import map_editor
 import skilltree
 import multiplayer_client

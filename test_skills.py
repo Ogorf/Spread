@@ -61,7 +61,7 @@ def test_base():
         assert value[0] == perk.values[0][0]
         perk.level_up()
         assert perk.attack_modifier(None) == value[0]
-        skilltree = skilltree.SkillTree([AS.AttackSkill([perk])])
+        skilltree = skilltree.SkillTree([AS.OffenseSkill([perk])])
         p.skilltree = skilltree
         #assert p.attack_modifier(None) == value[0]
 
@@ -72,7 +72,7 @@ def test_rage():
     for time, value in value_list:
         perk = AS.Rage([(time, value)])
         perk.level_up()
-        skilltree = skilltree.SkillTree([AS.AttackSkill([perk])])
+        skilltree = skilltree.SkillTree([AS.OffenseSkill([perk])])
         p.skilltree = skilltree
         pcells = create_test_cells(1, p, 1)
         a_bubbles = create_test_bubbles(1, p0, 10)
@@ -92,7 +92,7 @@ def test_berserker():
         p.clear_action_tracker()
         perk = AS.Berserker([(time, value)])
         perk.level_up()
-        skilltree = skilltree.SkillTree([AS.AttackSkill([perk])])
+        skilltree = skilltree.SkillTree([AS.OffenseSkill([perk])])
         p.skilltree = skilltree
         pcells = create_test_cells(2, p)
         b1 = pcells[0].attack((0, 0))
@@ -116,7 +116,7 @@ def test_slavery():
     for value in value_list:
         perk = AS.Slavery(value)
         perk.level_up()
-        skilltree = skilltree.SkillTree([AS.AttackSkill([perk])])
+        skilltree = skilltree.SkillTree([AS.OffenseSkill([perk])])
         p.skilltree = skilltree
         c = create_test_cells(1, p1)[0]
         old_pop = c.population

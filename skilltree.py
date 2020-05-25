@@ -1,5 +1,6 @@
 from utils import *
 from pathlib import Path
+import options
 
 pygame.init()
 
@@ -169,7 +170,7 @@ class Perk:
 
 class SkillTree:
     _tooltip_font = pygame.font.SysFont("comincsans", 20)
-    phage_dir = "profiles/default/phages/"
+    phage_dir = "profiles/" + options.current_settings.profile_name + "/phages/"
     phage_ending = ".phg"
 
     def __init__(self, skills, name="unnamed", player=None):
